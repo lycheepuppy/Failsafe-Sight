@@ -395,17 +395,7 @@
       <div class="header-left">
         <div class="logo">
           <div class="logo-icon">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <!-- Enhanced shield with better proportions -->
-              <path d="M14 3L24 8V16C24 22.0751 19.0751 27 14 27C8.92487 27 4 22.0751 4 16V8L14 3Z" fill="#00ff88"/>
-              <!-- Shield interior with better contrast -->
-              <path d="M14 7L22 12V18C22 20.7614 19.7614 23 17 23C14.2386 23 12 20.7614 12 18V12L14 7Z" fill="#000000" opacity="0.15"/>
-              <!-- Enhanced security lock -->
-              <rect x="10" y="14" width="8" height="5" rx="1.5" fill="#000000" opacity="0.25"/>
-              <circle cx="14" cy="16.5" r="1.2" fill="#000000" opacity="0.4"/>
-              <!-- Subtle glow effect -->
-              <path d="M14 3L24 8V16C24 22.0751 19.0751 27 14 27C8.92487 27 4 22.0751 4 16V8L14 3Z" stroke="#00ff88" stroke-width="0.5" fill="none" opacity="0.3"/>
-            </svg>
+            <img src="/shield.png" alt="Failsafe Shield" width="70" height="70" />
           </div>
           <div class="logo-text">
             <div class="brand-name">FAILSAFE</div>
@@ -418,10 +408,6 @@
         </div>
       </div>
       <div class="header-right">
-        <div class="status-indicator">
-          <div class="status-dot"></div>
-          <span>System Online</span>
-        </div>
         <div class="user-info">
           <span class="email">demo@failsafe.com</span>
           <div class="avatar">
@@ -439,6 +425,9 @@
   <section class="hero">
     <div class="hero-background">
       <div class="grid-overlay"></div>
+      <div class="hero-shield-accent">
+        <img src="/static/failsafelogo.png" alt="Failsafe Icon" />
+      </div>
     </div>
     
     <div class="hero-wrapper">
@@ -491,36 +480,6 @@
             View Integration Guide
           </button>
         </div>
-      </div>
-      
-      <div class="hero-graphic">
-        <svg width="500" height="500" viewBox="0 0 500 500" fill="none">
-          <!-- Outer shield -->
-          <path d="M250 60L420 180V320C420 400 340 440 250 440C160 440 80 400 80 320V180L250 60Z" 
-                stroke="#00ff88" stroke-width="4" fill="none" opacity="0.2"/>
-          
-          <!-- Middle shield -->
-          <path d="M250 120L360 200V280C360 340 310 360 250 360C190 360 140 340 140 280V200L250 120Z" 
-                stroke="#00ff88" stroke-width="3" fill="none" opacity="0.4"/>
-          
-          <!-- Inner shield -->
-          <path d="M250 180L300 220V260C300 280 280 280 250 280C220 280 200 280 200 260V220L250 180Z" 
-                stroke="#00ff88" stroke-width="2" fill="none" opacity="0.6"/>
-          
-          <!-- Radar lines -->
-          <path d="M180 250Q250 180 320 250" stroke="#00ff88" stroke-width="2" fill="none" opacity="0.8"/>
-          <path d="M180 270Q250 200 320 270" stroke="#00ff88" stroke-width="2" fill="none" opacity="0.6"/>
-          <path d="M180 290Q250 220 320 290" stroke="#00ff88" stroke-width="2" fill="none" opacity="0.4"/>
-          
-          <!-- Target circles -->
-          <circle cx="250" cy="250" r="40" stroke="#00ff88" stroke-width="2" fill="none" opacity="0.8"/>
-          <circle cx="250" cy="250" r="20" stroke="#00ff88" stroke-width="2" fill="none" opacity="1"/>
-          
-          <!-- Scanning line -->
-          <line x1="210" y1="250" x2="290" y2="250" stroke="#00ff88" stroke-width="3" opacity="0.9">
-            <animate attributeName="opacity" values="0.9;0.3;0.9" dur="2s" repeatCount="indefinite"/>
-          </line>
-        </svg>
       </div>
     </div>
   </section>
@@ -1437,7 +1396,8 @@
   .logo {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: 16px;
+    margin-right: 32px;
   }
 
   .logo-icon {
@@ -1446,20 +1406,35 @@
     justify-content: center;
   }
 
-  .logo-text h1 {
-    font-size: var(--font-size-xl);
+  .logo-icon img {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.3));
+  }
+
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .brand-name {
+    font-size: 24px;
     font-weight: 800;
-    color: var(--text-primary);
+    color: #ffffff;
     margin: 0;
     letter-spacing: -0.5px;
+    line-height: 1;
   }
 
   .product-name {
-    font-size: var(--font-size-sm);
+    font-size: 12px;
     font-weight: 600;
-    color: var(--primary-green);
+    color: #00ff88;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    line-height: 1;
   }
 
   .tagline {
@@ -3875,6 +3850,20 @@
     z-index: 1;
   }
 
+  .hero-shield-accent {
+    position: absolute;
+    top: 50%;
+    right: 10%;
+    transform: translateY(-50%);
+    z-index: 1;
+    opacity: 0.15;
+    filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.2));
+  }
+
+  .hero-shield-accent img {
+    object-fit: contain;
+  }
+
   .grid-overlay {
     position: absolute;
     top: 0;
@@ -3891,13 +3880,13 @@
   .hero-wrapper {
     position: relative;
     z-index: 2;
-    max-width: 1200px;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 40px 32px 80px 32px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
-    align-items: flex-start;
+    padding: 80px 32px 120px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
   .hero-content {
@@ -3919,20 +3908,22 @@
   }
 
   .hero-title {
-    font-size: 56px;
-    font-weight: 700;
+    font-size: 64px;
+    font-weight: 800;
     line-height: 1.1;
-    margin-bottom: 24px;
+    margin-bottom: 32px;
     color: #00ff88;
-    letter-spacing: -0.5px;
+    letter-spacing: -1px;
+    text-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
   }
 
   .hero-description {
-    font-size: 18px;
+    font-size: 20px;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 40px;
-    max-width: 520px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 48px;
+    max-width: 600px;
+    font-weight: 400;
   }
 
   .hero-features {

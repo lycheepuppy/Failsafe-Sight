@@ -385,7 +385,7 @@
 </script>
 
 <svelte:head>
-  <title>FailSafe Sight – Your AI's Second Line of Defense</title>
+  <title>FailSafe Sight – Programmable AI Firewall for LLM & GenAI Apps</title>
 </svelte:head>
 
 <main class="container">
@@ -409,7 +409,7 @@
       </div>
       <div class="header-right">
         <div class="user-info">
-          <span class="email">demo@failsafe.com</span>
+          <a href="mailto:support@getfailsafe.com" class="email">support@getfailsafe.com</a>
           <div class="avatar">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M9 9C11.4853 9 13.5 6.98528 13.5 4.5C13.5 2.01472 11.4853 0 9 0C6.51472 0 4.5 2.01472 4.5 4.5C4.5 6.98528 6.51472 9 9 9Z" fill="#00ff88"/>
@@ -436,13 +436,13 @@
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M11.5 3.5L5.5 9.5L2.5 6.5" stroke="#00ff88" stroke-width="1.5" fill="none"/>
           </svg>
-          <span>AI-Powered Fraud Detection & KYT</span>
+          <span>Programmable AI Firewall for LLM & GenAI Apps</span>
         </div>
         
-        <h1 class="hero-title">Your AI's Second Line of Defense</h1>
+        <h1 class="hero-title">Programmable AI Firewall for LLM & GenAI Apps</h1>
         
         <p class="hero-description">
-          Leverage AI/ML frameworks to detect anomalous transaction patterns indicative of possible theft, fraud, and Sybil activity. FailSafe Sight delivers enterprise-grade AI guardrails that identify what generic trust and safety tools overlook.
+          Set real guardrails on your AI: hard boundaries, financial thresholds, and agentic oversight that blocks hallucinations, jailbreaks, and business risk—before they reach production.
         </p>
         
         <div class="hero-features">
@@ -450,19 +450,19 @@
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M13 4L6 11L3 8" stroke="#00ff88" stroke-width="2" fill="none"/>
             </svg>
-            <span>ML-powered address scoring predicts the risk of transacting parties</span>
+            <span>Multi-layered defense: boundary rules, financial limits, agentic risk analyst</span>
           </div>
           <div class="feature">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M13 4L6 11L3 8" stroke="#00ff88" stroke-width="2" fill="none"/>
             </svg>
-            <span>Radar alerts in the event early signs of an attack are identified</span>
+            <span>Real-time protection from hallucinations, prompt injection, and business risk</span>
           </div>
           <div class="feature">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M13 4L6 11L3 8" stroke="#00ff88" stroke-width="2" fill="none"/>
             </svg>
-            <span>Know Your Transaction (KYT) using Radar's API</span>
+            <span>Active, programmable "AI firewall"—not just generic T&S</span>
           </div>
         </div>
         
@@ -484,8 +484,9 @@
     </div>
   </section>
 
-  <!-- Core Benefits -->
+  <!-- Why Failsafe Sight? -->
   <section class="benefits">
+    <h2>Why Failsafe Sight?</h2>
     <div class="benefits-grid">
       <div class="benefit-card">
         <div class="benefit-icon">
@@ -494,12 +495,12 @@
             <path d="M12 8L16 10V12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12V10L12 8Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
           </svg>
         </div>
-        <h3>Business-Aware Guardrails</h3>
-        <p>Enforce policies specific to your domain, from financial thresholds to sensitive data handling requirements. Configure rules to match operational standards and regulatory obligations.</p>
+        <h3>Active, Programmable AI Firewall</h3>
+        <p>Not just generic T&S—our active firewall blocks hallucinations, jailbreaks, and business risk with hard boundaries and financial thresholds before they reach production.</p>
         <div class="benefit-features">
-          <span class="feature-tag">Policy Enforcement</span>
-          <span class="feature-tag">Regulatory Compliance</span>
-          <span class="feature-tag">Custom Rules</span>
+          <span class="feature-tag">Hard Boundaries</span>
+          <span class="feature-tag">Financial Controls</span>
+          <span class="feature-tag">Real-time Blocking</span>
         </div>
       </div>
       <div class="benefit-card">
@@ -508,12 +509,12 @@
             <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" fill="none"/>
           </svg>
         </div>
-        <h3>Advanced Threat Detection</h3>
-        <p>Identify prompt injection, policy gaming, emotional manipulation, technical exploits, and hybrid attack patterns before they compromise business decisions.</p>
+        <h3>Proprietary Agentic Risk Analyst</h3>
+        <p>Our AI sentinel provides intelligent oversight that goes beyond pattern matching—understanding context, intent, and business impact to make informed blocking decisions.</p>
         <div class="benefit-features">
-          <span class="feature-tag">Multi-Layer Analysis</span>
-          <span class="feature-tag">Real-Time Detection</span>
-          <span class="feature-tag">Pattern Recognition</span>
+          <span class="feature-tag">Context-Aware</span>
+          <span class="feature-tag">Intelligent Analysis</span>
+          <span class="feature-tag">Business Impact</span>
         </div>
       </div>
       <div class="benefit-card">
@@ -522,12 +523,12 @@
             <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" fill="none"/>
           </svg>
         </div>
-        <h3>Enterprise Integration</h3>
-        <p>Built on the LLM-Guard open-source framework, extended with FailSafe's detection, monitoring, and configuration capabilities for operational environments.</p>
+        <h3>Open Source + Proprietary Blend</h3>
+        <p>Built on trusted open-source foundations with proprietary enhancements for trust, extensibility, and enterprise-grade security that scales with your AI applications.</p>
         <div class="benefit-features">
-          <span class="feature-tag">Open Source Foundation</span>
+          <span class="feature-tag">Trust & Transparency</span>
+          <span class="feature-tag">Extensible</span>
           <span class="feature-tag">Enterprise Ready</span>
-          <span class="feature-tag">Scalable Architecture</span>
         </div>
       </div>
     </div>
@@ -535,8 +536,8 @@
 
   <!-- How It Works Section -->
   <section id="how-it-works" class="how-it-works">
-    <h2>Integration Overview</h2>
-    <p class="api-intro">FailSafe Sight provides the oversight that mission-critical AI systems require. It combines open-source trust and safety capabilities with domain-specific policy enforcement to deliver a comprehensive, auditable risk-control layer.</p>
+    <h2>How It Works</h2>
+    <p class="api-intro">Set real guardrails on your AI with our programmable firewall. Block hallucinations, jailbreaks, and business risk before they reach production.</p>
     
     <div class="api-endpoints">
       <div class="endpoint-card">
@@ -574,53 +575,53 @@
     </div>
 
     <div class="integration-steps">
-      <h3>Quick Integration Steps</h3>
+      <h3>How It Works</h3>
       <div class="steps-grid">
         <div class="step-card">
           <div class="step-number">1</div>
-          <h4>Install SDK</h4>
-          <p>Add FailSafe Sight to your AI pipeline</p>
+          <h4>Set your AI boundaries</h4>
+          <p>Define hard limits and guardrails for your LLM applications</p>
         </div>
         <div class="step-card">
           <div class="step-number">2</div>
-          <h4>Configure Rules</h4>
-          <p>Set up your business policies and limits</p>
+          <h4>Add business rules</h4>
+          <p>Configure financial exposure, compliance, and operational limits</p>
         </div>
         <div class="step-card">
           <div class="step-number">3</div>
-          <h4>Add Checkpoint</h4>
-          <p>Insert guardrail check after AI decision</p>
+          <h4>Deploy agentic analyst</h4>
+          <p>Activate our AI sentinel for real-time risk assessment</p>
         </div>
         <div class="step-card">
           <div class="step-number">4</div>
-          <h4>Handle Response</h4>
-          <p>Process verdict and take appropriate action</p>
+          <h4>Enforce autonomously</h4>
+          <p>Block threats and enforce policies automatically</p>
         </div>
       </div>
     </div>
 
     <div class="api-features">
-      <h3>API Features</h3>
+      <h3>Block, Enforce, Automate</h3>
       <div class="features-grid">
         <div class="feature-item">
           <div class="feature-icon">⚡</div>
-          <h4>Real-time Processing</h4>
-          <p>Sub-2 second response times for immediate fraud detection</p>
+          <h4>Real-time Blocking</h4>
+          <p>Sub-2 second response times to block threats before they reach production</p>
         </div>
         <div class="feature-item">
           <div class="feature-icon">🛡️</div>
-          <h4>Multi-layer Detection</h4>
-          <p>Pattern analysis + AI analysis + business rules</p>
+          <h4>Multi-layer Defense</h4>
+          <p>Boundary rules + AI analysis + agentic oversight for comprehensive protection</p>
         </div>
         <div class="feature-item">
           <div class="feature-icon">🔧</div>
-          <h4>Customizable Rules</h4>
-          <p>Configure policies specific to your business needs</p>
+          <h4>Programmable Rules</h4>
+          <p>Configure hard boundaries and financial thresholds specific to your business</p>
         </div>
         <div class="feature-item">
           <div class="feature-icon">📊</div>
           <h4>Detailed Evidence</h4>
-          <p>Comprehensive detection evidence for audit trails</p>
+          <p>Comprehensive detection evidence and audit trails for compliance</p>
         </div>
       </div>
     </div>
@@ -635,7 +636,7 @@
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" fill="none"/>
       </svg>
-      <span>Microloan Demo</span>
+              <span>Try Demo</span>
     </button>
     <button 
       class:active={activeTab === 'config'} 
@@ -664,8 +665,8 @@
       <!-- Scenario Selector -->
       <div class="scenario-selector">
         <div class="scenario-header">
-          <h3>Choose a Loan Application Scenario</h3>
-          <p>This microloan disbursement system processes applications ranging from $50 to $3,000. The agent evaluates applicant information, verifies documentation including payslips and identification, and makes approval decisions. Select from realistic scenarios to demonstrate how FailSafe Sight's second-line defense identifies fraud, emotional manipulation, and system bypass attempts that could evade initial AI screening.</p>
+          <h3>Interactive Demo: See the AI Firewall in Action</h3>
+          <p>Watch FailSafe Sight block hallucinations, jailbreaks, and business risk in real-time. Select from realistic scenarios to see how our programmable AI firewall identifies and blocks threats that could evade generic trust & safety tools.</p>
         </div>
         <div class="scenario-grid">
           {#each scenarios as scenario}

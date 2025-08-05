@@ -9,4 +9,17 @@ restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
 [env]
-NODE_ENV = "production" 
+NODE_ENV = "production"
+PORT = "3000"
+HOST = "0.0.0.0"
+CORS_ORIGIN = "*"
+LOG_LEVEL = "info"
+LOG_FORMAT = "json"
+ENABLE_REQUEST_LOGGING = "true"
+CACHE_ENABLED = "true"
+CACHE_TTL = "300"
+CACHE_MAX_SIZE = "1000"
+REQUEST_TIMEOUT = "30000"
+LOAN_LIMIT = "3000"
+MIN_LOAN = "50"
+SENSITIVITY_LEVEL = "medium" 

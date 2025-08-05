@@ -3715,8 +3715,12 @@
   /* Header Styles */
   .header {
     background: #000000;
-    border-bottom: 1px solid rgba(0, 255, 136, 0.2);
-    padding: 24px 0;
+    border-bottom: 1px solid rgba(0, 255, 136, 0.15);
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
   }
 
   .header-container {
@@ -3731,56 +3735,56 @@
   .header-left {
     display: flex;
     align-items: center;
-    gap: 60px;
+    gap: 40px;
   }
 
   .logo {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
   }
 
   .logo-icon {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
   }
 
   .logo-text {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 2px;
   }
 
   .brand-name {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     color: #ffffff;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
   }
 
   .product-name {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 500;
     color: #00ff88;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
   }
 
   .header-tagline {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
   }
 
   .main-tagline {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     color: #ffffff;
   }
 
   .sub-tagline {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.7);
-    max-width: 280px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    max-width: 260px;
   }
 
   .header-right {
@@ -3835,7 +3839,7 @@
   /* Hero Section */
   .hero {
     position: relative;
-    min-height: 90vh;
+    min-height: 85vh;
     background: #000000;
     overflow: hidden;
     display: flex;
@@ -3854,11 +3858,11 @@
   .hero-shield-accent {
     position: absolute;
     top: 50%;
-    right: 10%;
+    right: 8%;
     transform: translateY(-50%);
     z-index: 1;
-    opacity: 0.15;
-    filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.2));
+    opacity: 0.08;
+    filter: drop-shadow(0 0 15px rgba(0, 255, 136, 0.15));
   }
 
   .hero-shield-accent img {
@@ -3872,18 +3876,18 @@
     width: 100%;
     height: 100%;
     background-image: 
-      linear-gradient(rgba(0, 255, 136, 0.08) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 255, 136, 0.08) 1px, transparent 1px);
-    background-size: 40px 40px;
-    opacity: 0.4;
+      linear-gradient(rgba(0, 255, 136, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 136, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    opacity: 0.3;
   }
 
   .hero-wrapper {
     position: relative;
     z-index: 2;
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 80px 32px 120px 32px;
+    padding: 60px 32px 100px 32px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -3898,99 +3902,103 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: rgba(0, 255, 136, 0.1);
-    border: 1px solid rgba(0, 255, 136, 0.3);
-    border-radius: 20px;
-    padding: 8px 16px;
-    font-size: 13px;
+    background: rgba(0, 255, 136, 0.08);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    border-radius: 24px;
+    padding: 10px 18px;
+    font-size: 14px;
     font-weight: 500;
     color: #00ff88;
-    margin-bottom: 32px;
+    margin-bottom: 36px;
+    backdrop-filter: blur(10px);
   }
 
   .hero-title {
-    font-size: 64px;
-    font-weight: 800;
+    font-size: 56px;
+    font-weight: 700;
     line-height: 1.1;
-    margin-bottom: 32px;
+    margin-bottom: 28px;
     color: #00ff88;
-    letter-spacing: -1px;
-    text-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+    letter-spacing: -0.8px;
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
   }
 
   .hero-description {
-    font-size: 20px;
+    font-size: 18px;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 48px;
-    max-width: 600px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 44px;
+    max-width: 680px;
     font-weight: 400;
   }
 
   .hero-features {
-    margin-bottom: 48px;
+    margin-bottom: 44px;
   }
 
   .feature {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 16px;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 15px;
+    gap: 14px;
+    margin-bottom: 18px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 16px;
     line-height: 1.5;
   }
 
   .feature svg {
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: 3px;
   }
 
   .hero-actions {
     display: flex;
-    gap: 16px;
+    gap: 20px;
+    align-items: center;
   }
 
   .btn-primary {
     background: #00ff88;
     color: #000000;
     border: none;
-    padding: 14px 28px;
+    padding: 16px 32px;
     font-size: 15px;
     font-weight: 600;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
   }
 
   .btn-primary:hover {
     background: #00cc6a;
-    transform: translateY(-1px);
-    box-shadow: 0 8px 16px rgba(0, 255, 136, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 255, 136, 0.3);
   }
 
   .btn-secondary {
     background: transparent;
     color: #00ff88;
     border: 2px solid #00ff88;
-    padding: 12px 26px;
+    padding: 14px 30px;
     font-size: 15px;
     font-weight: 600;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    backdrop-filter: blur(10px);
   }
 
   .btn-secondary:hover {
-    background: rgba(0, 255, 136, 0.1);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 16px rgba(0, 255, 136, 0.2);
+    background: rgba(0, 255, 136, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 255, 136, 0.15);
   }
 
   .hero-graphic {

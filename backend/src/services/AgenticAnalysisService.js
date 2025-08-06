@@ -7,11 +7,17 @@ const logger = require('../utils/logger');
 
 class AgenticAnalysisService {
   constructor() {
+    // Focus only on clear manipulation indicators, not common words
     this.manipulationPatterns = [
-      'please help me', 'i\'m desperate', 'i have no money', 'i\'m starving',
-      'i\'ll die', 'emergency', 'urgent', 'desperate', 'please', 'help',
-      'family', 'children', 'sick', 'hospital', 'medical', 'crisis',
-      'threat', 'complain', 'escalate', 'manager', 'ceo', 'social media'
+      'i\'m desperate', 'i\'ll die', 'please help me', 'i have no money',
+      'i\'m starving', 'desperate', 'threat', 'complain', 'escalate',
+      'manager', 'ceo', 'social media', 'i will sue', 'i will report'
+    ];
+
+    this.politicalManipulationPatterns = [
+      'political connections', 'influence policy', 'favorable treatment',
+      'use my position', 'political gain', 'corruption', 'unethical',
+      'bribe', 'kickback', 'political favor', 'government influence'
     ];
 
     this.jailbreakPatterns = [
@@ -40,17 +46,32 @@ class AgenticAnalysisService {
   analyze(request) {
     const analysis = {
       manipulation: false,
+      politicalManipulation: false,
       jailbreak: false,
       hallucination: false,
       poisoning: false,
-      evidence: []
+      evidence: [],
+      verdict: 'CONFIRM',
+      reasonCode: 'BOUNDARY',
+      action: 'ALLOW'
     };
 
-    // Check for manipulation
+    // Check for emotional manipulation
     const manipulationResult = this.detectManipulation(request);
     if (manipulationResult.detected) {
       analysis.manipulation = true;
       analysis.evidence.push(manipulationResult.evidence);
+    }
+
+    // Check for political manipulation
+    const politicalResult = this.detectPoliticalManipulation(request);
+    if (politicalResult.detected) {
+      analysis.politicalManipulation = true;
+      analysis.evidence.push(politicalResult.evidence);
+      // Political manipulation should override to BLOCK
+      analysis.verdict = 'OVERRIDE';
+      analysis.reasonCode = 'POLITICAL';
+      analysis.action = 'BLOCK';
     }
 
     // Check for jailbreak
@@ -58,6 +79,11 @@ class AgenticAnalysisService {
     if (jailbreakResult.detected) {
       analysis.jailbreak = true;
       analysis.evidence.push(jailbreakResult.evidence);
+      if (analysis.verdict !== 'OVERRIDE') {
+        analysis.verdict = 'OVERRIDE';
+        analysis.reasonCode = 'SECURITY';
+        analysis.action = 'BLOCK';
+      }
     }
 
     // Check for hallucination
@@ -76,9 +102,11 @@ class AgenticAnalysisService {
 
     logger.debug('Agentic analysis completed', {
       manipulation: analysis.manipulation,
+      politicalManipulation: analysis.politicalManipulation,
       jailbreak: analysis.jailbreak,
       hallucination: analysis.hallucination,
       poisoning: analysis.poisoning,
+      verdict: analysis.verdict,
       evidenceCount: analysis.evidence.length
     });
 
@@ -98,6 +126,26 @@ class AgenticAnalysisService {
       return {
         detected: true,
         evidence: 'AGENTIC: Emotional manipulation tactics detected',
+        confidence: 'HIGH'
+      };
+    }
+
+    return { detected: false, evidence: '', confidence: 'LOW' };
+  }
+
+  /**
+   * Detect political manipulation and corruption
+   * @param {Object} request - Guardrail request object
+   * @returns {Object} Detection result
+   */
+  detectPoliticalManipulation(request) {
+    const inputMatch = this.matchesPatterns(request.input, this.politicalManipulationPatterns);
+    const reasoningMatch = this.matchesPatterns(request.reasoning, this.politicalManipulationPatterns);
+
+    if (inputMatch || reasoningMatch) {
+      return {
+        detected: true,
+        evidence: 'AGENTIC: Political manipulation and corruption detected',
         confidence: 'HIGH'
       };
     }
@@ -176,6 +224,7 @@ class AgenticAnalysisService {
    * @returns {boolean} True if any pattern matches
    */
   matchesPatterns(text, patterns) {
+    if (!text) return false;
     const lowerText = text.toLowerCase();
     return patterns.some(pattern => lowerText.includes(pattern.toLowerCase()));
   }
@@ -188,6 +237,7 @@ class AgenticAnalysisService {
   getSummary(analysis) {
     const issues = [];
     if (analysis.manipulation) issues.push('Manipulation');
+    if (analysis.politicalManipulation) issues.push('Political Manipulation');
     if (analysis.jailbreak) issues.push('Jailbreak');
     if (analysis.hallucination) issues.push('Hallucination');
     if (analysis.poisoning) issues.push('Poisoning');

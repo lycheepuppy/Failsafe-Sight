@@ -1,94 +1,60 @@
 /**
  * Scanner Service
  * Implements LLM Guard scanners for comprehensive security validation
- * Based on protectai/llm-guard library functionality
+ * Focused on deterministic checks for sensitive areas only
  */
 
 const axios = require('axios');
 const logger = require('../utils/logger');
-const natural = require('natural');
-const compromise = require('compromise');
-const sentiment = require('sentiment');
-const ProfanityFilter = require('profanity-filter');
 
 class ScannerService {
   constructor() {
+    // Only keep deterministic patterns for critical security checks
     this.maliciousUrlPatterns = [
       // Common malicious URL patterns
       /bit\.ly|tinyurl\.com|goo\.gl|t\.co|is\.gd|v\.gd|cli\.gs|ow\.ly|su\.pr|twurl\.nl|snipurl\.com|short\.to|BudURL\.com|ping\.fm|tr\.im|zip\.my|MetaURI\.com|sn\.im|short\.ie|kl\.am|wp\.me|rubyurl\.com|om\.ly|to\.ly|bit\.do|t\.co|lnkd\.in|db\.tt|qr\.ae|adf\.ly|goo\.gl|bitly\.com|cur\.lv|tiny\.cc|ow\.ly|bit\.ly|ity\.im|q\.gs|is\.gd|po\.st|bc\.vc|twitthis\.com|u\.to|j\.mp|buzurl\.com|cutt\.us|u\.bb|yourls\.org|x\.co|prettylinkpro\.com|scrnch\.me|filoops\.info|vzturl\.com|qr\.net|1url\.com|tweez\.me|v\.gd|tr\.im|link\.zip\.net/i,
-      // Suspicious domains
-      /(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}/g,
       // IP addresses (potential malicious redirects)
       /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/g
     ];
 
-    this.suspiciousKeywords = [
-      'malware', 'virus', 'phishing', 'scam', 'hack', 'exploit',
-      'crypto', 'bitcoin', 'wallet', 'password', 'login', 'bank',
-      'paypal', 'credit', 'card', 'social', 'security', 'ssn'
-    ];
-
-    // Initialize profanity filter
-    this.profanityFilter = ProfanityFilter;
-    
-    // Bias detection patterns
-    this.biasPatterns = {
-      gender: [
-        /he\s+should|she\s+should|men\s+are|women\s+are|male\s+vs\s+female|gender\s+roles/i,
-        /stereotypical|traditional\s+roles|masculine|feminine|patriarchal/i
-      ],
-      racial: [
-        /race\s+based|ethnic\s+background|cultural\s+stereotypes|racial\s+profiling/i,
-        /white\s+vs\s+black|asian\s+vs\s+hispanic|minority\s+groups/i
-      ],
-      age: [
-        /young\s+people\s+are|old\s+people\s+are|millennials\s+vs\s+boomers/i,
-        /age\s+discrimination|generational\s+differences/i
-      ],
-      socioeconomic: [
-        /rich\s+vs\s+poor|wealthy\s+vs\s+poor|upper\s+class|lower\s+class/i,
-        /socioeconomic\s+status|education\s+level/i
-      ]
-    };
-
-    // Code detection patterns
-    this.codePatterns = [
-      /function\s+\w+\s*\(|const\s+\w+\s*=|let\s+\w+\s*=|var\s+\w+\s*=/i,
-      /if\s*\(|for\s*\(|while\s*\(|switch\s*\(|try\s*\{/i,
-      /import\s+|export\s+|require\s*\(|module\.exports/i,
-      /class\s+\w+|interface\s+\w+|enum\s+\w+/i,
-      /console\.log|debugger|breakpoint/i,
-      /<script>|<\/script>|<php|<%|<%=/i,
-      /SELECT\s+.*\s+FROM|INSERT\s+INTO|UPDATE\s+.*\s+SET|DELETE\s+FROM/i
-    ];
-
-    // Secrets detection patterns
+    // Only keep high-confidence secrets patterns
     this.secretPatterns = {
       apiKeys: [
-        /api[_-]?key\s*[:=]\s*['"][a-zA-Z0-9]{20,}['"]/i,
         /sk-[a-zA-Z0-9]{24,}|pk-[a-zA-Z0-9]{24,}/i,
-        /[a-zA-Z0-9]{32,}/i
+        /api[_-]?key\s*[:=]\s*['"][a-zA-Z0-9]{32,}['"]/i
       ],
       passwords: [
         /password\s*[:=]\s*['"][^'"]{8,}['"]/i,
-        /passwd\s*[:=]\s*['"][^'"]{8,}['"]/i,
-        /pwd\s*[:=]\s*['"][^'"]{8,}['"]/i
+        /passwd\s*[:=]\s*['"][^'"]{8,}['"]/i
       ],
       tokens: [
-        /token\s*[:=]\s*['"][a-zA-Z0-9]{20,}['"]/i,
-        /access[_-]?token\s*[:=]\s*['"][a-zA-Z0-9]{20,}['"]/i,
-        /bearer\s+[a-zA-Z0-9]{20,}/i
-      ],
-      emails: [
-        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i
+        /token\s*[:=]\s*['"][a-zA-Z0-9]{32,}['"]/i,
+        /access[_-]?token\s*[:=]\s*['"][a-zA-Z0-9]{32,}['"]/i,
+        /bearer\s+[a-zA-Z0-9]{32,}/i
       ],
       creditCards: [
         /\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/i
       ],
       ssn: [
-        /\b\d{3}-\d{2}-\d{4}\b|\b\d{9}\b/i
+        /\b\d{3}-\d{2}-\d{4}\b/i
       ]
     };
+
+    // Only keep actual code injection patterns (not common words)
+    this.codeInjectionPatterns = [
+      // Actual code constructs
+      /<script[^>]*>.*<\/script>/is,
+      /<\?php.*\?>/is,
+      /<%.*%>/is,
+      /javascript:/i,
+      /data:text\/html/i,
+      /vbscript:/i,
+      /on\w+\s*=/i,
+      /eval\s*\(/i,
+      /document\.write\s*\(/i,
+      /innerHTML\s*=/i,
+      /outerHTML\s*=/i
+    ];
   }
 
   /**
@@ -107,18 +73,16 @@ class ScannerService {
         };
       }
 
-      // Average reading speed: 200-250 words per minute
-      const wordsPerMinute = 225;
-      const words = content.trim().split(/\s+/).length;
-      const readingTimeMinutes = words / wordsPerMinute;
-      const readingTimeSeconds = Math.round(readingTimeMinutes * 60);
+      const words = content.trim().split(/\s+/).filter(word => word.length > 0);
+      const wordCount = words.length;
+      const wordsPerMinute = 200; // Average reading speed
+      const readingTime = Math.ceil(wordCount / wordsPerMinute);
 
       return {
         success: true,
-        readingTime: readingTimeSeconds,
-        readingTimeMinutes: Math.round(readingTimeMinutes * 10) / 10,
-        wordCount: words,
-        complexity: this.assessComplexity(content)
+        readingTime,
+        wordCount,
+        wordsPerMinute
       };
     } catch (error) {
       logger.error('Reading time calculation failed', { error: error.message });
@@ -133,22 +97,60 @@ class ScannerService {
 
   /**
    * Assess content complexity
-   * @param {string} content - Text content
-   * @returns {string} Complexity level
+   * @param {string} content - Text content to analyze
+   * @returns {Object} Complexity analysis
    */
   assessComplexity(content) {
-    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const words = content.split(/\s+/).filter(w => w.length > 0);
-    const avgWordsPerSentence = words.length / sentences.length;
-    
-    if (avgWordsPerSentence > 25) return 'HIGH';
-    if (avgWordsPerSentence > 15) return 'MEDIUM';
-    return 'LOW';
+    try {
+      if (!content || typeof content !== 'string') {
+        return {
+          success: false,
+          error: 'Invalid content provided',
+          complexity: 'LOW',
+          score: 0
+        };
+      }
+
+      const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
+      const words = content.split(/\s+/).filter(w => w.length > 0);
+      const avgWordsPerSentence = words.length / sentences.length;
+
+      let complexity = 'LOW';
+      let score = 0;
+
+      if (avgWordsPerSentence > 20) {
+        complexity = 'HIGH';
+        score = 80;
+      } else if (avgWordsPerSentence > 15) {
+        complexity = 'MEDIUM';
+        score = 50;
+      } else {
+        complexity = 'LOW';
+        score = 20;
+      }
+
+      return {
+        success: true,
+        complexity,
+        score,
+        avgWordsPerSentence: Math.round(avgWordsPerSentence * 100) / 100,
+        sentenceCount: sentences.length,
+        wordCount: words.length
+      };
+    } catch (error) {
+      logger.error('Complexity assessment failed', { error: error.message });
+      return {
+        success: false,
+        error: error.message,
+        complexity: 'LOW',
+        score: 0
+      };
+    }
   }
 
   /**
-   * Validate JSON structure and content
-   * @param {string} content - JSON string to validate
+   * Validate JSON format (simplified - only check if it's valid JSON)
+   * @param {string} content - Content to validate
    * @returns {Object} JSON validation results
    */
   validateJSON(content) {
@@ -158,120 +160,44 @@ class ScannerService {
           success: false,
           error: 'Invalid content provided',
           isValid: false,
-          issues: ['Content is not a string']
+          errorDetails: 'No content provided'
         };
       }
 
-      const issues = [];
-      let parsedJson = null;
-
-      // Try to parse JSON
-      try {
-        parsedJson = JSON.parse(content);
-      } catch (parseError) {
+      // Only validate if content looks like JSON (starts with { or [)
+      const trimmed = content.trim();
+      if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
         return {
           success: true,
           isValid: false,
-          issues: [`JSON parsing failed: ${parseError.message}`],
-          parsedJson: null
+          errorDetails: 'Content is not JSON format',
+          isJsonLike: false
         };
       }
 
-      // Check for common JSON security issues
-      if (typeof parsedJson === 'object' && parsedJson !== null) {
-        // Check for circular references
-        const seen = new WeakSet();
-        const hasCircularRefs = this.checkCircularReferences(parsedJson, seen);
-        if (hasCircularRefs) {
-          issues.push('Circular references detected');
-        }
-
-        // Check for suspicious keys
-        const suspiciousKeys = this.findSuspiciousKeys(parsedJson);
-        if (suspiciousKeys.length > 0) {
-          issues.push(`Suspicious keys found: ${suspiciousKeys.join(', ')}`);
-        }
-
-        // Check for large objects
-        const size = JSON.stringify(parsedJson).length;
-        if (size > 1000000) { // 1MB limit
-          issues.push('JSON object is too large (>1MB)');
-        }
-      }
-
+      // Try to parse as JSON
+      JSON.parse(trimmed);
+      
       return {
         success: true,
-        isValid: issues.length === 0,
-        issues,
-        parsedJson,
-        size: JSON.stringify(parsedJson).length
+        isValid: true,
+        errorDetails: null,
+        isJsonLike: true
       };
     } catch (error) {
-      logger.error('JSON validation failed', { error: error.message });
       return {
-        success: false,
-        error: error.message,
+        success: true,
         isValid: false,
-        issues: [error.message]
+        errorDetails: error.message,
+        isJsonLike: true
       };
     }
-  }
-
-  /**
-   * Check for circular references in objects
-   * @param {Object} obj - Object to check
-   * @param {WeakSet} seen - Set of seen objects
-   * @returns {boolean} True if circular references found
-   */
-  checkCircularReferences(obj, seen = new WeakSet()) {
-    if (obj !== null && typeof obj === 'object') {
-      if (seen.has(obj)) {
-        return true;
-      }
-      seen.add(obj);
-      
-      for (const key in obj) {
-        if (this.checkCircularReferences(obj[key], seen)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Find suspicious keys in JSON objects
-   * @param {Object} obj - Object to analyze
-   * @returns {Array} Array of suspicious keys
-   */
-  findSuspiciousKeys(obj, path = '') {
-    const suspicious = [];
-    
-    if (obj !== null && typeof obj === 'object') {
-      for (const key in obj) {
-        const currentPath = path ? `${path}.${key}` : key;
-        
-        // Check if key is suspicious
-        if (this.suspiciousKeywords.some(keyword => 
-          key.toLowerCase().includes(keyword.toLowerCase())
-        )) {
-          suspicious.push(currentPath);
-        }
-        
-        // Recursively check nested objects
-        if (typeof obj[key] === 'object' && obj[key] !== null) {
-          suspicious.push(...this.findSuspiciousKeys(obj[key], currentPath));
-        }
-      }
-    }
-    
-    return suspicious;
   }
 
   /**
    * Check URL reachability
    * @param {string} url - URL to check
-   * @returns {Object} URL reachability results
+   * @returns {Promise<Object>} URL reachability results
    */
   async checkURLReachability(url) {
     try {
@@ -286,64 +212,49 @@ class ScannerService {
       }
 
       // Basic URL validation
-      try {
-        new URL(url);
-      } catch (urlError) {
+      const urlPattern = /^https?:\/\/.+/i;
+      if (!urlPattern.test(url)) {
         return {
-          success: true,
-          isReachable: false,
+          success: false,
           error: 'Invalid URL format',
+          isReachable: false,
           statusCode: null,
           responseTime: null
         };
       }
 
       const startTime = Date.now();
-      
-      try {
-        const response = await axios.head(url, {
-          timeout: 10000, // 10 second timeout
-          maxRedirects: 5,
-          validateStatus: () => true // Don't throw on any status code
-        });
+      const response = await axios.get(url, {
+        timeout: 5000,
+        maxRedirects: 3,
+        validateStatus: () => true // Accept all status codes
+      });
+      const responseTime = Date.now() - startTime;
 
-        const responseTime = Date.now() - startTime;
-        const isReachable = response.status >= 200 && response.status < 400;
+      const isReachable = response.status >= 200 && response.status < 400;
 
-        return {
-          success: true,
-          isReachable,
-          statusCode: response.status,
-          responseTime,
-          headers: response.headers,
-          finalUrl: response.request?.res?.responseUrl || url
-        };
-      } catch (requestError) {
-        const responseTime = Date.now() - startTime;
-        
-        return {
-          success: true,
-          isReachable: false,
-          error: requestError.message,
-          statusCode: requestError.response?.status || null,
-          responseTime
-        };
-      }
+      return {
+        success: true,
+        isReachable,
+        statusCode: response.status,
+        responseTime,
+        url: url
+      };
     } catch (error) {
-      logger.error('URL reachability check failed', { url, error: error.message });
       return {
         success: false,
         error: error.message,
         isReachable: false,
         statusCode: null,
-        responseTime: null
+        responseTime: null,
+        url: url
       };
     }
   }
 
   /**
-   * Detect malicious URLs
-   * @param {string} content - Content to scan for URLs
+   * Detect malicious URLs in content
+   * @param {string} content - Content to analyze
    * @returns {Object} Malicious URL detection results
    */
   detectMaliciousURLs(content) {
@@ -354,42 +265,33 @@ class ScannerService {
           error: 'Invalid content provided',
           maliciousUrls: [],
           suspiciousUrls: [],
-          totalUrls: 0
+          riskLevel: 'NONE'
         };
       }
 
       const maliciousUrls = [];
       const suspiciousUrls = [];
-      
+
       // Extract URLs from content
-      const urlRegex = /(https?:\/\/[^\s]+)/g;
-      const urls = content.match(urlRegex) || [];
-      
-      urls.forEach(url => {
-        const isMalicious = this.isMaliciousURL(url);
-        const isSuspicious = this.isSuspiciousURL(url);
-        
-        if (isMalicious) {
-          maliciousUrls.push({
-            url,
-            reason: 'Matches malicious URL pattern',
-            confidence: 'HIGH'
-          });
-        } else if (isSuspicious) {
-          suspiciousUrls.push({
-            url,
-            reason: 'Suspicious URL characteristics',
-            confidence: 'MEDIUM'
-          });
+      const urlPattern = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi;
+      const urls = content.match(urlPattern) || [];
+
+      for (const url of urls) {
+        if (this.isMaliciousURL(url)) {
+          maliciousUrls.push(url);
+        } else if (this.isSuspiciousURL(url)) {
+          suspiciousUrls.push(url);
         }
-      });
+      }
+
+      const riskLevel = this.calculateRiskLevel(maliciousUrls.length, suspiciousUrls.length);
 
       return {
         success: true,
         maliciousUrls,
         suspiciousUrls,
-        totalUrls: urls.length,
-        riskLevel: this.calculateRiskLevel(maliciousUrls.length, suspiciousUrls.length)
+        riskLevel,
+        totalUrls: urls.length
       };
     } catch (error) {
       logger.error('Malicious URL detection failed', { error: error.message });
@@ -398,7 +300,7 @@ class ScannerService {
         error: error.message,
         maliciousUrls: [],
         suspiciousUrls: [],
-        totalUrls: 0
+        riskLevel: 'NONE'
       };
     }
   }
@@ -410,24 +312,10 @@ class ScannerService {
    */
   isMaliciousURL(url) {
     try {
-      const urlObj = new URL(url);
-      
-      // Check against malicious patterns
-      for (const pattern of this.maliciousUrlPatterns) {
-        if (pattern.test(url)) {
-          return true;
-        }
-      }
-      
-      // Check for suspicious keywords in URL
-      const urlLower = url.toLowerCase();
-      if (this.suspiciousKeywords.some(keyword => urlLower.includes(keyword))) {
-        return true;
-      }
-      
-      return false;
+      // Check against known malicious patterns
+      return this.maliciousUrlPatterns.some(pattern => pattern.test(url));
     } catch (error) {
-      return true; // Invalid URLs are considered suspicious
+      return false;
     }
   }
 
@@ -438,26 +326,16 @@ class ScannerService {
    */
   isSuspiciousURL(url) {
     try {
-      const urlObj = new URL(url);
-      
-      // Check for suspicious characteristics
-      const suspicious = [
-        urlObj.hostname.includes('bit.ly'),
-        urlObj.hostname.includes('tinyurl'),
-        urlObj.hostname.includes('goo.gl'),
-        urlObj.pathname.length > 100, // Very long paths
-        urlObj.search.length > 200, // Very long query strings
-        urlObj.hostname.split('.').length > 4 // Too many subdomains
-      ];
-      
-      return suspicious.some(Boolean);
+      // Check for IP addresses (potential malicious redirects)
+      const ipPattern = /\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b/;
+      return ipPattern.test(url);
     } catch (error) {
       return false;
     }
   }
 
   /**
-   * Calculate overall risk level
+   * Calculate risk level based on malicious and suspicious URLs
    * @param {number} maliciousCount - Number of malicious URLs
    * @param {number} suspiciousCount - Number of suspicious URLs
    * @returns {string} Risk level
@@ -470,238 +348,7 @@ class ScannerService {
   }
 
   /**
-   * Detect bias in content
-   * @param {string} content - Content to analyze
-   * @returns {Object} Bias detection results
-   */
-  detectBias(content) {
-    try {
-      if (!content || typeof content !== 'string') {
-        return {
-          success: false,
-          error: 'Invalid content provided',
-          biasDetected: false,
-          biasTypes: [],
-          confidence: 0
-        };
-      }
-
-      const biasTypes = [];
-      let totalMatches = 0;
-
-      // Check each bias category
-      for (const [category, patterns] of Object.entries(this.biasPatterns)) {
-        let categoryMatches = 0;
-        
-        for (const pattern of patterns) {
-          const matches = content.match(pattern);
-          if (matches) {
-            categoryMatches += matches.length;
-            totalMatches += matches.length;
-          }
-        }
-
-        if (categoryMatches > 0) {
-          biasTypes.push({
-            type: category,
-            matches: categoryMatches,
-            examples: this.extractBiasExamples(content, patterns)
-          });
-        }
-      }
-
-      const confidence = Math.min(totalMatches * 10, 100);
-      const biasDetected = biasTypes.length > 0;
-
-      return {
-        success: true,
-        biasDetected,
-        biasTypes,
-        confidence,
-        totalMatches
-      };
-    } catch (error) {
-      logger.error('Bias detection failed', { error: error.message });
-      return {
-        success: false,
-        error: error.message,
-        biasDetected: false,
-        biasTypes: [],
-        confidence: 0
-      };
-    }
-  }
-
-  /**
-   * Extract bias examples from content
-   * @param {string} content - Content to analyze
-   * @param {Array} patterns - Patterns to match
-   * @returns {Array} Examples found
-   */
-  extractBiasExamples(content, patterns) {
-    const examples = [];
-    for (const pattern of patterns) {
-      const matches = content.match(pattern);
-      if (matches) {
-        examples.push(...matches.slice(0, 3)); // Limit to 3 examples
-      }
-    }
-    return examples;
-  }
-
-  /**
-   * Detect toxicity in content
-   * @param {string} content - Content to analyze
-   * @returns {Object} Toxicity detection results
-   */
-  detectToxicity(content) {
-    try {
-      if (!content || typeof content !== 'string') {
-        return {
-          success: false,
-          error: 'Invalid content provided',
-          toxicityScore: 0,
-          isToxic: false,
-          profanityCount: 0
-        };
-      }
-
-      // Use sentiment analysis
-      const sentimentResult = new sentiment();
-      const analysis = sentimentResult.analyze(content);
-
-      // Check for profanity
-      const profanityResult = this.profanityFilter.clean(content);
-      const profanityCount = content !== profanityResult ? 1 : 0;
-
-      // Calculate toxicity score (0-100)
-      let toxicityScore = 0;
-      
-      // Negative sentiment contributes to toxicity
-      if (analysis.score < 0) {
-        toxicityScore += Math.abs(analysis.score) * 10;
-      }
-
-      // Profanity contributes to toxicity
-      toxicityScore += profanityCount * 15;
-
-      // Cap at 100
-      toxicityScore = Math.min(toxicityScore, 100);
-
-      const isToxic = toxicityScore > 30;
-
-      return {
-        success: true,
-        toxicityScore: Math.round(toxicityScore),
-        isToxic,
-        profanityCount,
-        sentimentScore: analysis.score,
-        negativeWords: analysis.negative,
-        positiveWords: analysis.positive
-      };
-    } catch (error) {
-      logger.error('Toxicity detection failed', { error: error.message });
-      return {
-        success: false,
-        error: error.message,
-        toxicityScore: 0,
-        isToxic: false,
-        profanityCount: 0
-      };
-    }
-  }
-
-  /**
-   * Detect code in content
-   * @param {string} content - Content to analyze
-   * @returns {Object} Code detection results
-   */
-  detectCode(content) {
-    try {
-      if (!content || typeof content !== 'string') {
-        return {
-          success: false,
-          error: 'Invalid content provided',
-          codeDetected: false,
-          codeTypes: [],
-          confidence: 0
-        };
-      }
-
-      const codeTypes = [];
-      let totalMatches = 0;
-
-      // Check for programming language patterns
-      const languagePatterns = {
-        javascript: [
-          /function\s+\w+\s*\(|const\s+\w+\s*=|let\s+\w+\s*=|var\s+\w+\s*=/i,
-          /if\s*\(|for\s*\(|while\s*\(|switch\s*\(|try\s*\{/i,
-          /import\s+|export\s+|require\s*\(|module\.exports/i,
-          /console\.log|debugger|breakpoint/i
-        ],
-        python: [
-          /def\s+\w+\s*\(|import\s+\w+|from\s+\w+\s+import/i,
-          /if\s+.*:|for\s+.*:|while\s+.*:|try:|except:/i,
-          /print\s*\(|return\s+|class\s+\w+/i
-        ],
-        sql: [
-          /SELECT\s+.*\s+FROM|INSERT\s+INTO|UPDATE\s+.*\s+SET|DELETE\s+FROM/i,
-          /WHERE\s+|GROUP\s+BY|ORDER\s+BY|JOIN\s+/i
-        ],
-        html: [
-          /<[^>]+>|<\/[^>]+>|<[^>]+\/>/i,
-          /<!DOCTYPE|html>|head>|body>|div>|span>/i
-        ],
-        php: [
-          /<\?php|\?>|<%|<%=/i,
-          /\$[a-zA-Z_][a-zA-Z0-9_]*\s*=/i
-        ]
-      };
-
-      for (const [language, patterns] of Object.entries(languagePatterns)) {
-        let languageMatches = 0;
-        
-        for (const pattern of patterns) {
-          const matches = content.match(pattern);
-          if (matches) {
-            languageMatches += matches.length;
-            totalMatches += matches.length;
-          }
-        }
-
-        if (languageMatches > 0) {
-          codeTypes.push({
-            language,
-            matches: languageMatches,
-            confidence: Math.min(languageMatches * 20, 100)
-          });
-        }
-      }
-
-      const codeDetected = codeTypes.length > 0;
-      const confidence = codeDetected ? Math.min(totalMatches * 15, 100) : 0;
-
-      return {
-        success: true,
-        codeDetected,
-        codeTypes,
-        confidence,
-        totalMatches
-      };
-    } catch (error) {
-      logger.error('Code detection failed', { error: error.message });
-      return {
-        success: false,
-        error: error.message,
-        codeDetected: false,
-        codeTypes: [],
-        confidence: 0
-      };
-    }
-  }
-
-  /**
-   * Detect secrets and sensitive information
+   * Detect secrets and sensitive information (deterministic only)
    * @param {string} content - Content to analyze
    * @returns {Object} Secrets detection results
    */
@@ -741,24 +388,22 @@ class ScannerService {
           secretTypes.push({
             type,
             count: typeMatches,
-            examples: foundSecrets
+            examples: foundSecrets,
+            riskLevel: this.getSecretRiskLevel(type)
           });
         }
       }
 
       const secretsDetected = secretTypes.length > 0;
-      let riskLevel = 'NONE';
-      
-      if (totalSecrets > 5) riskLevel = 'HIGH';
-      else if (totalSecrets > 2) riskLevel = 'MEDIUM';
-      else if (totalSecrets > 0) riskLevel = 'LOW';
+      const riskLevel = secretsDetected ? 
+        this.getHighestRiskLevel(secretTypes.map(s => s.riskLevel)) : 'NONE';
 
       return {
         success: true,
         secretsDetected,
         secretTypes,
-        totalSecrets,
-        riskLevel
+        riskLevel,
+        totalSecrets
       };
     } catch (error) {
       logger.error('Secrets detection failed', { error: error.message });
@@ -773,181 +418,158 @@ class ScannerService {
   }
 
   /**
-   * Sanitize secret for display (hide sensitive parts)
+   * Sanitize secret for display
    * @param {string} secret - Secret to sanitize
    * @returns {string} Sanitized secret
    */
   sanitizeSecret(secret) {
-    if (secret.length <= 8) {
-      return '*'.repeat(secret.length);
-    }
-    
-    const visibleChars = Math.min(4, Math.floor(secret.length * 0.2));
-    const hiddenChars = secret.length - visibleChars;
-    
-    return secret.substring(0, visibleChars) + '*'.repeat(hiddenChars);
+    if (!secret || secret.length < 8) return '***';
+    return secret.substring(0, 4) + '***' + secret.substring(secret.length - 4);
   }
 
   /**
-   * Detect language of content
-   * @param {string} content - Content to analyze
-   * @returns {Object} Language detection results
+   * Get risk level for secret type
+   * @param {string} type - Secret type
+   * @returns {string} Risk level
    */
-  detectLanguage(content) {
+  getSecretRiskLevel(type) {
+    const riskLevels = {
+      apiKeys: 'HIGH',
+      passwords: 'HIGH',
+      tokens: 'HIGH',
+      creditCards: 'HIGH',
+      ssn: 'HIGH'
+    };
+    return riskLevels[type] || 'MEDIUM';
+  }
+
+  /**
+   * Get highest risk level from array
+   * @param {Array} riskLevels - Array of risk levels
+   * @returns {string} Highest risk level
+   */
+  getHighestRiskLevel(riskLevels) {
+    const levels = { 'NONE': 0, 'LOW': 1, 'MEDIUM': 2, 'HIGH': 3 };
+    return riskLevels.reduce((highest, current) => 
+      levels[current] > levels[highest] ? current : highest, 'NONE');
+  }
+
+  /**
+   * Detect code injection attempts (deterministic only)
+   * @param {string} content - Content to analyze
+   * @returns {Object} Code injection detection results
+   */
+  detectCodeInjection(content) {
     try {
       if (!content || typeof content !== 'string') {
         return {
           success: false,
           error: 'Invalid content provided',
-          detectedLanguage: 'unknown',
+          injectionDetected: false,
+          injectionTypes: [],
           confidence: 0
         };
       }
 
-      // Simple language detection based on common patterns
-      const languagePatterns = {
-        english: /[a-zA-Z]/g,
-        spanish: /[áéíóúñü]/gi,
-        french: /[àâäéèêëïîôöùûüÿç]/gi,
-        german: /[äöüß]/gi,
-        chinese: /[\u4e00-\u9fff]/g,
-        japanese: /[\u3040-\u309f\u30a0-\u30ff]/g,
-        korean: /[\uac00-\ud7af]/g,
-        arabic: /[\u0600-\u06ff]/g,
-        russian: /[\u0400-\u04ff]/g
-      };
+      const injectionTypes = [];
+      let totalMatches = 0;
 
-      let maxScore = 0;
-      let detectedLanguage = 'unknown';
-
-      for (const [language, pattern] of Object.entries(languagePatterns)) {
+      for (const pattern of this.codeInjectionPatterns) {
         const matches = content.match(pattern);
-        const score = matches ? matches.length : 0;
-        
-        if (score > maxScore) {
-          maxScore = score;
-          detectedLanguage = language;
+        if (matches) {
+          totalMatches += matches.length;
+          injectionTypes.push({
+            pattern: pattern.toString(),
+            matches: matches.length,
+            confidence: 90 // High confidence for actual code injection patterns
+          });
         }
       }
 
-      const confidence = Math.min((maxScore / content.length) * 100, 100);
+      const injectionDetected = injectionTypes.length > 0;
+      const confidence = injectionDetected ? 90 : 0;
 
       return {
         success: true,
-        detectedLanguage,
-        confidence: Math.round(confidence),
-        totalCharacters: content.length
+        injectionDetected,
+        injectionTypes,
+        confidence,
+        totalMatches
       };
     } catch (error) {
-      logger.error('Language detection failed', { error: error.message });
+      logger.error('Code injection detection failed', { error: error.message });
       return {
         success: false,
         error: error.message,
-        detectedLanguage: 'unknown',
+        injectionDetected: false,
+        injectionTypes: [],
         confidence: 0
       };
     }
   }
 
   /**
-   * Check factual consistency (basic implementation)
-   * @param {string} content - Content to analyze
-   * @returns {Object} Factual consistency results
+   * Run comprehensive security scan (simplified)
+   * @param {string} content - Content to scan
+   * @returns {Promise<Object>} Comprehensive scan results
    */
-  checkFactualConsistency(content) {
+  async runComprehensiveScan(content) {
     try {
       if (!content || typeof content !== 'string') {
         return {
           success: false,
-          error: 'Invalid content provided',
-          consistencyScore: 0,
-          issues: []
+          error: 'Invalid content provided'
         };
       }
 
-      const issues = [];
-      let consistencyScore = 100;
+      // Run only deterministic checks
+      const readingTime = this.calculateReadingTime(content);
+      const complexity = this.assessComplexity(content);
+      const maliciousUrls = this.detectMaliciousURLs(content);
+      const secrets = this.detectSecrets(content);
+      const codeInjection = this.detectCodeInjection(content);
 
-      // Check for contradictory statements
-      const contradictions = [
-        { pattern: /(yes|no|true|false).*?(no|yes|false|true)/gi, penalty: 20 },
-        { pattern: /(always|never).*?(sometimes|occasionally)/gi, penalty: 15 },
-        { pattern: /(all|every|none).*?(some|few|many)/gi, penalty: 10 }
-      ];
+      // Determine overall risk level
+      const riskFactors = [];
+      let overallRisk = 'NONE';
 
-      for (const contradiction of contradictions) {
-        const matches = content.match(contradiction.pattern);
-        if (matches) {
-          issues.push(`Contradictory statements found: ${matches.length} instances`);
-          consistencyScore -= contradiction.penalty * matches.length;
-        }
+      if (maliciousUrls.success && maliciousUrls.riskLevel !== 'NONE') {
+        riskFactors.push(`Malicious URLs: ${maliciousUrls.riskLevel}`);
+        if (maliciousUrls.riskLevel === 'HIGH') overallRisk = 'HIGH';
       }
 
-      // Check for vague statements
-      const vaguePatterns = [
-        /maybe|perhaps|possibly|might|could|seems like/i,
-        /I think|I believe|in my opinion|as far as I know/i
-      ];
-
-      let vagueCount = 0;
-      for (const pattern of vaguePatterns) {
-        const matches = content.match(pattern);
-        if (matches) {
-          vagueCount += matches.length;
-        }
+      if (secrets.success && secrets.riskLevel !== 'NONE') {
+        riskFactors.push(`Secrets detected: ${secrets.riskLevel}`);
+        if (secrets.riskLevel === 'HIGH') overallRisk = 'HIGH';
       }
 
-      if (vagueCount > 0) {
-        issues.push(`Vague statements found: ${vagueCount} instances`);
-        consistencyScore -= vagueCount * 5;
+      if (codeInjection.success && codeInjection.injectionDetected) {
+        riskFactors.push('Code injection detected');
+        overallRisk = 'HIGH';
       }
 
-      consistencyScore = Math.max(0, consistencyScore);
+      if (overallRisk === 'NONE' && riskFactors.length > 0) {
+        overallRisk = 'LOW';
+      }
 
       return {
         success: true,
-        consistencyScore: Math.round(consistencyScore),
-        issues,
-        totalIssues: issues.length
+        readingTime,
+        complexity,
+        maliciousUrls,
+        secrets,
+        codeInjection,
+        riskFactors,
+        overallRisk,
+        timestamp: new Date().toISOString()
       };
     } catch (error) {
-      logger.error('Factual consistency check failed', { error: error.message });
+      logger.error('Comprehensive scan failed', { error: error.message });
       return {
         success: false,
-        error: error.message,
-        consistencyScore: 0,
-        issues: []
+        error: error.message
       };
     }
-  }
-
-  /**
-   * Run comprehensive scan on content
-   * @param {string} content - Content to scan
-   * @returns {Object} Comprehensive scan results
-   */
-  async runComprehensiveScan(content) {
-    const results = {
-      readingTime: this.calculateReadingTime(content),
-      jsonValidation: this.validateJSON(content),
-      maliciousUrls: this.detectMaliciousURLs(content),
-      biasDetection: this.detectBias(content),
-      toxicityDetection: this.detectToxicity(content),
-      codeDetection: this.detectCode(content),
-      secretsDetection: this.detectSecrets(content),
-      languageDetection: this.detectLanguage(content),
-      factualConsistency: this.checkFactualConsistency(content),
-      urlReachability: null
-    };
-
-    // Check URL reachability for any URLs found
-    const urls = content.match(/(https?:\/\/[^\s]+)/g) || [];
-    if (urls.length > 0) {
-      // Check first URL as sample (to avoid too many requests)
-      results.urlReachability = await this.checkURLReachability(urls[0]);
-    }
-
-    return results;
   }
 }
 

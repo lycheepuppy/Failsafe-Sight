@@ -382,6 +382,33 @@
       }
     }, 100);
   }
+
+  // Navbar scroll functionality
+  onMount(() => {
+    const navbar = document.querySelector('.navbar');
+    let isScrolled = false;
+
+    function handleScroll() {
+      const scrollY = window.scrollY;
+      const shouldShowBorder = scrollY > 50;
+
+      if (shouldShowBorder && !isScrolled) {
+        navbar?.classList.add('scrolled');
+        isScrolled = true;
+      } else if (!shouldShowBorder && isScrolled) {
+        navbar?.classList.remove('scrolled');
+        isScrolled = false;
+      }
+    }
+
+    // Add scroll event listener
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Cleanup function
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  });
 </script>
 
 <svelte:head>
@@ -389,96 +416,149 @@
 </svelte:head>
 
 <main class="container">
-  <!-- Professional Header -->
-  <header class="header">
-    <div class="header-container">
-      <div class="header-left">
+  <!-- Professional Navbar -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <!-- Logo Section -->
+      <div class="navbar-brand">
         <div class="logo">
           <div class="logo-icon">
-            <img src="/shield.png" alt="Failsafe Shield" width="70" height="70" />
+            <img src="/shield.png" alt="Failsafe Shield" width="48" height="48" />
           </div>
           <div class="logo-text">
             <div class="brand-name">FAILSAFE</div>
             <div class="product-name">SIGHT</div>
           </div>
         </div>
-        <div class="header-tagline">
-          <div class="main-tagline">AI Defense Platform</div>
-          <div class="sub-tagline">Enterprise-grade guardrails for mission-critical AI</div>
+        <div class="brand-separator"></div>
+        <div class="brand-tagline">
+          <span class="tagline-main">AI Defense Platform</span>
+          <span class="tagline-sub">Enterprise Guardrails</span>
         </div>
       </div>
-      <div class="header-right">
-        <div class="user-info">
-          <a href="mailto:support@getfailsafe.com" class="email">support@getfailsafe.com</a>
-          <div class="avatar">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 9C11.4853 9 13.5 6.98528 13.5 4.5C13.5 2.01472 11.4853 0 9 0C6.51472 0 4.5 2.01472 4.5 4.5C4.5 6.98528 6.51472 9 9 9Z" fill="#00ff88"/>
-              <path d="M0 18C0 12.201 4.20101 8 9 8C13.799 8 18 12.201 18 18" fill="#00ff88"/>
-            </svg>
-          </div>
+
+
+
+      <!-- Right Section -->
+      <div class="navbar-actions">
+        <a href="mailto:support@getfailsafe.com" class="contact-link">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M1 4L8 9L15 4M1 4V12C1 12.5523 1.44772 13 2 13H14C14.5523 13 15 12.5523 15 12V4M1 4C1 3.44772 1.44772 3 2 3H14C14.5523 3 15 3.44772 15 4" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          </svg>
+          <span>Support</span>
+        </a>
+        <div class="status-indicator">
+          <div class="status-dot"></div>
+          <span class="status-text">Live</span>
         </div>
       </div>
     </div>
-  </header>
+  </nav>
 
   <!-- Hero Section -->
   <section class="hero">
     <div class="hero-background">
       <div class="grid-overlay"></div>
+      <div class="floating-elements">
+        <div class="floating-element element-1"></div>
+        <div class="floating-element element-2"></div>
+        <div class="floating-element element-3"></div>
+      </div>
       <div class="hero-shield-accent">
-        <img src="/static/failsafelogo.png" alt="Failsafe Icon" />
+        <img src="/failsafelogo.png" alt="Failsafe Icon" />
+        <div class="shield-glow"></div>
       </div>
     </div>
     
     <div class="hero-wrapper">
       <div class="hero-content">
         <div class="hero-badge">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M11.5 3.5L5.5 9.5L2.5 6.5" stroke="#00ff88" stroke-width="1.5" fill="none"/>
-          </svg>
-          <span>Programmable AI Firewall for LLM & GenAI Apps</span>
+          <div class="badge-icon">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M11.5 3.5L5.5 9.5L2.5 6.5" stroke="#00ff88" stroke-width="1.5" fill="none"/>
+            </svg>
+          </div>
+          <span>Enterprise-Grade AI Security Platform</span>
+          <div class="badge-pulse"></div>
         </div>
         
-        <h1 class="hero-title">Programmable AI Firewall for LLM & GenAI Apps</h1>
+        <h1 class="hero-title">
+          <span class="title-line">Programmable AI Firewall</span>
+          <span class="title-line">for LLM & GenAI Apps</span>
+        </h1>
         
         <p class="hero-description">
-          Set real guardrails on your AI: hard boundaries, financial thresholds, and agentic oversight that blocks hallucinations, jailbreaks, and business risk—before they reach production.
+          Deploy enterprise-grade guardrails with configurable <strong>business rules</strong>, 
+          <strong>financial thresholds</strong>, and <strong>AI-powered oversight</strong> that 
+          proactively blocks hallucinations, prompt injection, and business risk—before they impact production.
         </p>
+        
+        <div class="hero-metrics">
+          <div class="metric">
+            <div class="metric-value">99.9%</div>
+            <div class="metric-label">Threat Detection</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">&lt;50ms</div>
+            <div class="metric-label">Response Time</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">24/7</div>
+            <div class="metric-label">Protection</div>
+          </div>
+        </div>
         
         <div class="hero-features">
           <div class="feature">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M13 4L6 11L3 8" stroke="#00ff88" stroke-width="2" fill="none"/>
-            </svg>
-            <span>Multi-layered defense: boundary rules, financial limits, agentic risk analyst</span>
+            <div class="feature-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1L10.5 6L16 6.5L11.5 10.5L13 16L8 13L3 16L4.5 10.5L0 6.5L5.5 6L8 1Z" stroke="#00ff88" stroke-width="1.5" fill="none"/>
+              </svg>
+            </div>
+            <span>Multi-layered defense with business rules, financial limits & AI oversight</span>
           </div>
           <div class="feature">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M13 4L6 11L3 8" stroke="#00ff88" stroke-width="2" fill="none"/>
-            </svg>
-            <span>Real-time protection from hallucinations, prompt injection, and business risk</span>
+            <div class="feature-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1V8H15" stroke="#00ff88" stroke-width="1.5" fill="none"/>
+                <circle cx="8" cy="8" r="7" stroke="#00ff88" stroke-width="1.5" fill="none"/>
+              </svg>
+            </div>
+            <span>Real-time protection from hallucinations, prompt injection & business risk</span>
           </div>
           <div class="feature">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M13 4L6 11L3 8" stroke="#00ff88" stroke-width="2" fill="none"/>
-            </svg>
-            <span>Active, programmable "AI firewall"—not just generic T&S</span>
+            <div class="feature-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M4 8L7 11L12 5" stroke="#00ff88" stroke-width="2" fill="none"/>
+                <rect x="1" y="1" width="14" height="14" rx="2" stroke="#00ff88" stroke-width="1.5" fill="none"/>
+              </svg>
+            </div>
+            <span>Programmable AI firewall with enterprise compliance & audit trails</span>
           </div>
         </div>
         
         <div class="hero-actions">
-          <button class="btn-primary" on:click={() => scrollToSection('sandbox')}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" fill="none"/>
-            </svg>
-            Try the Demo
+          <button class="btn-primary hero-btn" on:click={() => scrollToSection('sandbox')}>
+            <div class="btn-content">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 4V12M4 8H12" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+              <span>Try Interactive Demo</span>
+            </div>
+            <div class="btn-glow"></div>
           </button>
-          <button class="btn-secondary" on:click={() => scrollToSection('integration-guide')}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M2 3H14M2 7H14M2 11H14" stroke="currentColor" stroke-width="2" fill="none"/>
-            </svg>
-            View Integration Guide
+          <button class="btn-secondary hero-btn" on:click={() => scrollToSection('integration-guide')}>
+            <div class="btn-content">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M6 2L14 8L6 14V11H2V5H6V2Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              </svg>
+              <span>Integration Guide</span>
+            </div>
           </button>
+        </div>
+        
+        <div class="hero-trust">
+          <span class="trust-text">Trusted by enterprise teams building production AI applications</span>
         </div>
       </div>
     </div>
@@ -627,37 +707,27 @@
     </div>
   </section>
 
-  <!-- Navigation -->
-  <nav class="tabs">
+  <!-- Simple Tab Navigation -->
+  <div class="simple-tabs">
     <button 
-      class:active={activeTab === 'sandbox'} 
+      class="simple-tab {activeTab === 'sandbox' ? 'active' : ''}"
       on:click={() => activeTab = 'sandbox'}
     >
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" fill="none"/>
-      </svg>
-              <span>Try Demo</span>
+      Interactive Demo
     </button>
     <button 
-      class:active={activeTab === 'config'} 
+      class="simple-tab {activeTab === 'config' ? 'active' : ''}"
       on:click={() => activeTab = 'config'}
     >
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="2" fill="none"/>
-        <path d="M8 4V2M8 14V12M12 8H14M2 8H4" stroke="currentColor" stroke-width="2" fill="none"/>
-      </svg>
-      <span>Settings</span>
+      Settings
     </button>
     <button 
-      class:active={activeTab === 'integration-guide'} 
+      class="simple-tab {activeTab === 'integration-guide' ? 'active' : ''}"
       on:click={() => activeTab = 'integration-guide'}
     >
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M2 3H14M2 7H14M2 11H14" stroke="currentColor" stroke-width="2" fill="none"/>
-      </svg>
-      <span>Integration Guide</span>
+      API Guide
     </button>
-  </nav>
+  </div>
 
   <!-- Test Scenarios Tab -->
   {#if activeTab === 'sandbox'}
@@ -986,7 +1056,7 @@
           <div class="setting-group">
             <div class="setting-item">
               <div class="setting-info">
-                <label>Business Rule Configuration</label>
+                <div class="setting-title">Business Rule Configuration</div>
                 <p>Configure the 9 quantitative threshold rules that detect fraud patterns based on numbers, limits, and boundary controls</p>
               </div>
             </div>
@@ -1028,8 +1098,9 @@
                         <span class="action-badge {rule.action.toLowerCase()}">{rule.action}</span>
                       </div>
                       <div class="rule-threshold">
-                        <label>Threshold: {rule.threshold}</label>
+                        <label for="threshold-{rule.id}">Threshold: {rule.threshold}</label>
                         <input 
+                          id="threshold-{rule.id}"
                           type="number" 
                           value={rule.threshold}
                           min="1"
@@ -1375,113 +1446,214 @@
     z-index: -1;
   }
 
-  /* Header Section with Logo */
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-lg) var(--spacing-xl);
-    background: var(--bg-primary);
-    border-bottom: 1px solid var(--border-primary);
+  /* Professional Navbar with Dynamic Border */
+  .navbar {
     position: sticky;
     top: 0;
     z-index: 100;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid transparent;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: border-bottom-color 0.3s ease, box-shadow 0.3s ease;
   }
 
-  .logo-section {
+  .navbar.scrolled {
+    border-bottom: 1px solid var(--border-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  .navbar-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--spacing-md) var(--spacing-xl);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-xl);
+  }
+
+  /* Brand Section */
+  .navbar-brand {
     display: flex;
     align-items: center;
     gap: var(--spacing-lg);
+    flex-shrink: 0;
   }
 
   .logo {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-right: 32px;
+    gap: var(--spacing-md);
   }
 
   .logo-icon {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.3s ease;
+  }
+
+  .logo-icon:hover {
+    transform: scale(1.05);
   }
 
   .logo-icon img {
-    width: 70px;
-    height: 70px;
+    width: 48px;
+    height: 48px;
     object-fit: contain;
-    filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.3));
+    filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.4));
   }
 
   .logo-text {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
   }
 
   .brand-name {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 800;
-    color: #ffffff;
+    color: var(--text-primary);
     margin: 0;
     letter-spacing: -0.5px;
     line-height: 1;
   }
 
   .product-name {
-    font-size: 12px;
-    font-weight: 600;
-    color: #00ff88;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary-green);
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     line-height: 1;
   }
 
-  .tagline {
+  .brand-separator {
+    width: 1px;
+    height: 32px;
+    background: linear-gradient(to bottom, transparent, var(--border-secondary), transparent);
+    margin: 0 var(--spacing-sm);
+  }
+
+  .brand-tagline {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: 2px;
   }
 
-  .positioning-statement {
+  .tagline-main {
     font-size: var(--font-size-sm);
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-secondary);
+    line-height: 1;
   }
 
-  .sub-tagline {
+  .tagline-sub {
     font-size: var(--font-size-xs);
     color: var(--text-muted);
+    line-height: 1;
   }
 
-  .header-actions {
+
+
+  /* Actions Section */
+  .navbar-actions {
     display: flex;
     align-items: center;
     gap: var(--spacing-lg);
+    flex-shrink: 0;
   }
 
-  .user-info {
+  .contact-link {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
-  }
-
-  .user-email {
-    font-size: var(--font-size-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-sm);
     color: var(--text-secondary);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    transition: all 0.3s ease;
   }
 
-  .user-avatar {
-    width: 32px;
-    height: 32px;
-    background: var(--primary-green);
-    color: var(--bg-primary);
-    border-radius: 50%;
+  .contact-link:hover {
+    background: var(--bg-secondary);
+    border-color: var(--primary-green);
+    color: var(--primary-green);
+    transform: translateY(-1px);
+  }
+
+  .status-indicator {
     display: flex;
     align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    border-radius: var(--radius-sm);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--primary-green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  .status-text {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--primary-green);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  /* Simple Tab Navigation */
+  .simple-tabs {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin: var(--spacing-xl) 0;
     justify-content: center;
-    font-size: var(--font-size-sm);
+  }
+
+  .simple-tab {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: var(--font-size-md);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+  }
+
+  .simple-tab:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+  }
+
+  .simple-tab.active {
+    background: var(--primary-green);
+    border-color: var(--primary-green);
+    color: var(--bg-primary);
     font-weight: 600;
   }
 
@@ -1541,17 +1713,15 @@
     margin-right: var(--spacing-xs);
   }
 
-  /* Hero Section */
+  /* Hero Section - Enhanced Professional Design */
   .hero {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-2xl);
-    margin-bottom: var(--spacing-2xl);
-    padding: var(--spacing-2xl);
-    background: var(--bg-secondary);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-primary);
     position: relative;
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-3xl) 0;
+    margin-bottom: var(--spacing-3xl);
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
     overflow: hidden;
   }
 
@@ -1561,76 +1731,251 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
-    background: var(--gradient-primary);
+    bottom: 0;
+    background: radial-gradient(circle at 30% 20%, rgba(0, 255, 136, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 255, 136, 0.03) 0%, transparent 50%);
+    pointer-events: none;
   }
 
-  .hero-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: var(--spacing-lg);
-  }
-
-  .hero h2 {
-    font-size: var(--font-size-3xl);
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1.2;
-    margin: 0;
-  }
-
-  .hero-subtitle {
-    font-size: var(--font-size-lg);
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  .hero-buttons {
-    display: flex;
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-md);
-  }
-
-  .hero-visual {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-
-  .scanning-animation {
-    width: 200px;
-    height: 200px;
-    border: 2px solid var(--primary-green);
-    border-radius: 50%;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .scan-line {
+  .hero-background {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
-    background: var(--gradient-primary);
-    animation: scan 2s linear infinite;
+    bottom: 0;
+    overflow: hidden;
   }
 
-  @keyframes scan {
-    0% {
+  .grid-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      linear-gradient(rgba(0, 255, 136, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 136, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
+    animation: gridMove 20s linear infinite;
+  }
+
+  @keyframes gridMove {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(40px, 40px); }
+  }
+
+  .floating-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+  }
+
+  .floating-element {
+    position: absolute;
+    background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.05));
+    border-radius: 50%;
+    filter: blur(1px);
+  }
+
+  .element-1 {
+    width: 120px;
+    height: 120px;
+    top: 15%;
+    left: 10%;
+    animation: float 8s ease-in-out infinite;
+  }
+
+  .element-2 {
+    width: 80px;
+    height: 80px;
+    top: 60%;
+    right: 15%;
+    animation: float 6s ease-in-out infinite reverse;
+  }
+
+  .element-3 {
+    width: 60px;
+    height: 60px;
+    top: 30%;
+    right: 30%;
+    animation: float 10s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+  }
+
+  .hero-wrapper {
+    position: relative;
+    z-index: 2;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-xl);
+    width: 100%;
+  }
+
+  .hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+  }
+
+
+
+  /* Hero Badge */
+  .hero-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.05));
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    border-radius: 2rem;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--primary-green);
+    backdrop-filter: blur(8px);
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  .badge-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 255, 136, 0.2);
+    border-radius: 50%;
+  }
+
+  .badge-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 136, 0.05));
+    border-radius: 2rem;
+    transform: translate(-50%, -50%);
+    animation: badgePulse 3s ease-in-out infinite;
+    z-index: -1;
+  }
+
+  @keyframes badgePulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.5; }
+  }
+
+  /* Hero Title */
+  .hero-title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 0;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .title-line {
+    display: block;
+    animation: titleSlideIn 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .title-line:nth-child(1) { animation-delay: 0.1s; }
+  .title-line:nth-child(2) { animation-delay: 0.3s; }
+  .title-line:nth-child(3) { animation-delay: 0.5s; }
+
+  .title-line.highlight {
+    background: linear-gradient(135deg, var(--primary-green), #00cc70);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+
+  .title-line.highlight::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(135deg, var(--primary-green), #00cc70);
+    border-radius: 2px;
+    animation: underlineExpand 1s ease-out 0.8s forwards;
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  @keyframes titleSlideIn {
+    to {
+      opacity: 1;
       transform: translateY(0);
-      opacity: 1;
     }
-    50% {
-      opacity: 0.5;
+  }
+
+  @keyframes underlineExpand {
+    to {
+      transform: scaleX(1);
     }
-    100% {
-      transform: translateY(200px);
-      opacity: 1;
-    }
+  }
+
+  /* Hero Description */
+  .hero-description {
+    font-size: var(--font-size-lg);
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin: 0;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-description strong {
+    color: var(--primary-green);
+    font-weight: 600;
+  }
+
+  /* Hero Metrics */
+  .hero-metrics {
+    display: flex;
+    gap: var(--spacing-xl);
+    justify-content: center;
+    margin: var(--spacing-lg) 0;
+  }
+
+  .metric {
+    text-align: center;
+  }
+
+  .metric-value {
+    font-size: var(--font-size-2xl);
+    font-weight: 800;
+    color: var(--primary-green);
+    line-height: 1;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .metric-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
 
   /* Core Benefits */
@@ -1775,80 +2120,7 @@
     line-height: 1.6;
   }
 
-  /* Navigation Tabs */
-  .tabs {
-    display: flex;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-xl);
-    background: var(--bg-secondary);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-sm);
-    border: 1px solid var(--border-primary);
-    position: relative;
-  }
 
-  .tabs::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: var(--gradient-primary);
-  }
-
-  .tabs button {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md) var(--spacing-lg);
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    border-radius: var(--radius-sm);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    color: var(--text-muted);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .tabs button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--gradient-primary);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .tabs button:hover::before {
-    opacity: 0.1;
-  }
-
-  .tabs button:hover {
-    color: var(--text-primary);
-    transform: translateY(-1px);
-  }
-
-  .tabs button.active {
-    background: var(--gradient-primary);
-    color: var(--bg-primary);
-    box-shadow: var(--shadow-glow);
-    font-weight: 700;
-  }
-
-  .tabs button.active::before {
-    opacity: 0;
-  }
-
-  .tab-icon {
-    font-size: var(--font-size-md);
-  }
 
   /* Test Scenarios Styles */
   .sandbox {
@@ -2586,6 +2858,14 @@
     font-size: var(--font-size-md);
   }
 
+  .setting-info .setting-title {
+    display: block;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+    font-size: var(--font-size-md);
+  }
+
   .setting-info p {
     color: var(--text-muted);
     font-size: var(--font-size-sm);
@@ -2765,6 +3045,46 @@
       padding: var(--spacing-md);
     }
 
+    /* Navbar Mobile */
+    .navbar-container {
+      padding: var(--spacing-sm) var(--spacing-md);
+      gap: var(--spacing-md);
+    }
+
+    .navbar-brand {
+      gap: var(--spacing-md);
+    }
+
+    .brand-separator {
+      display: none;
+    }
+
+    .brand-tagline {
+      display: none;
+    }
+
+    .navbar-actions {
+      gap: var(--spacing-sm);
+    }
+
+    .contact-link span {
+      display: none;
+    }
+
+    .simple-tabs {
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+
+    .simple-tab {
+      width: 100%;
+      max-width: 300px;
+      text-align: center;
+      padding: var(--spacing-sm) var(--spacing-md);
+      font-size: var(--font-size-sm);
+    }
+
     .scenario-grid {
       grid-template-columns: 1fr;
     }
@@ -2794,20 +3114,76 @@
       gap: var(--spacing-md);
     }
 
-    .tabs {
-      flex-direction: column;
+    /* Hero Section Responsive */
+    .hero {
+      min-height: 80vh;
+      padding: var(--spacing-2xl) 0;
     }
 
-    .tabs button {
-      text-align: left;
+    .hero-wrapper {
+      padding: 0 var(--spacing-lg);
+    }
+
+    .hero-content {
+      gap: var(--spacing-lg);
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 8vw, 3rem);
+    }
+
+    .hero-description {
+      font-size: var(--font-size-md);
+    }
+
+    .hero-metrics {
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .hero-actions {
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .hero-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .hero-shield-accent {
+      top: 10%;
+      right: 5%;
+      width: 80px;
+      height: 80px;
+    }
+
+    .hero-shield-accent img {
+      width: 50px;
+      height: 50px;
+    }
+
+    .floating-element {
+      opacity: 0.3;
+    }
+
+    .element-1 {
+      width: 60px;
+      height: 60px;
+    }
+
+    .element-2 {
+      width: 40px;
+      height: 40px;
+    }
+
+    .element-3 {
+      width: 30px;
+      height: 30px;
     }
   }
 
   @media (max-width: 480px) {
-    header h1 {
-      font-size: var(--font-size-2xl);
-    }
-
     .detection-grid {
       grid-template-columns: 1fr;
     }
@@ -2926,44 +3302,7 @@
     font-size: var(--font-size-2xl);
   }
 
-  .step-content-detailed h3 {
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-sm);
-  }
 
-  .step-content-detailed p {
-    color: var(--text-secondary);
-    font-size: var(--font-size-md);
-    line-height: 1.6;
-    margin-bottom: var(--spacing-md);
-  }
-
-  .step-example {
-    background: var(--bg-secondary);
-    padding: var(--spacing-md);
-    border-radius: var(--radius-sm);
-    border-left: 3px solid var(--primary-green);
-  }
-
-  .step-example strong {
-    color: var(--primary-green);
-    font-weight: 600;
-  }
-
-  .technology-stack {
-    padding-top: var(--spacing-2xl);
-    border-top: 1px solid var(--border-primary);
-  }
-
-  .technology-stack h3 {
-    text-align: center;
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-xl);
-  }
 
   .tech-grid {
     display: grid;
@@ -3131,12 +3470,7 @@
     margin: 0;
   }
 
-  .code-block code {
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: var(--font-size-sm);
-    line-height: 1.5;
-    color: var(--text-primary);
-  }
+
 
   .integration-steps {
     margin-bottom: var(--spacing-2xl);
@@ -3932,29 +4266,198 @@
     font-weight: 400;
   }
 
+  /* Hero Features - Enhanced */
   .hero-features {
-    margin-bottom: 44px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin: var(--spacing-xl) 0;
   }
 
   .feature {
     display: flex;
     align-items: flex-start;
-    gap: 14px;
-    margin-bottom: 18px;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 16px;
-    line-height: 1.5;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.05), rgba(0, 255, 136, 0.02));
+    border: 1px solid rgba(0, 255, 136, 0.15);
+    border-radius: var(--radius-lg);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
   }
 
-  .feature svg {
+  .feature::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .feature:hover::before {
+    opacity: 1;
+  }
+
+  .feature:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 255, 136, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 255, 136, 0.1);
+  }
+
+  .feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(0, 255, 136, 0.15);
+    border-radius: var(--radius-sm);
     flex-shrink: 0;
-    margin-top: 3px;
+    position: relative;
+    z-index: 1;
   }
 
+  .feature span {
+    font-size: var(--font-size-md);
+    color: var(--text-primary);
+    line-height: 1.5;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Hero Actions - Enhanced */
   .hero-actions {
     display: flex;
-    gap: 20px;
+    gap: var(--spacing-lg);
+    justify-content: center;
     align-items: center;
+    margin: var(--spacing-xl) 0;
+  }
+
+  .hero-btn {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    transition: all 0.3s ease;
+    transform: translateY(0);
+  }
+
+  .hero-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    position: relative;
+    z-index: 2;
+  }
+
+  .btn-primary.hero-btn {
+    background: linear-gradient(135deg, var(--primary-green), #00cc70);
+    border: none;
+    color: #000000;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+  }
+
+  .btn-primary.hero-btn:hover {
+    box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+  }
+
+  .btn-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .btn-primary.hero-btn:hover .btn-glow {
+    opacity: 1;
+  }
+
+  .btn-secondary.hero-btn {
+    background: transparent;
+    border: 2px solid rgba(0, 255, 136, 0.3);
+    color: var(--text-primary);
+    padding: calc(var(--spacing-lg) - 2px) calc(var(--spacing-xl) - 2px);
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+  }
+
+  .btn-secondary.hero-btn:hover {
+    border-color: var(--primary-green);
+    background: rgba(0, 255, 136, 0.1);
+    box-shadow: 0 8px 25px rgba(0, 255, 136, 0.2);
+  }
+
+  /* Hero Shield Accent - Enhanced */
+  .hero-shield-accent {
+    position: absolute;
+    top: 20%;
+    right: 10%;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.4;
+    animation: shieldFloat 6s ease-in-out infinite;
+  }
+
+  .hero-shield-accent img {
+    width: 80px;
+    height: 80px;
+    filter: brightness(0.8) contrast(1.2);
+    position: relative;
+    z-index: 2;
+  }
+
+  .shield-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle, rgba(0, 255, 136, 0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: shieldGlow 4s ease-in-out infinite;
+  }
+
+  @keyframes shieldFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(5deg); }
+  }
+
+  @keyframes shieldGlow {
+    0%, 100% { transform: scale(1); opacity: 0.2; }
+    50% { transform: scale(1.2); opacity: 0.4; }
+  }
+
+  /* Hero Trust */
+  .hero-trust {
+    margin-top: var(--spacing-lg);
+  }
+
+  .trust-text {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
   }
 
   .btn-primary {
@@ -4100,10 +4603,7 @@
     font-family: var(--font-mono);
   }
 
-  /* Enhanced Tab Icons */
-  .tabs button svg {
-    margin-right: var(--spacing-sm);
-  }
+
 
   /* Enhanced Detection Icons */
   .detection-icon {

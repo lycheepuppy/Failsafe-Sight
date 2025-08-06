@@ -6,6 +6,7 @@
 const BusinessRuleEngine = require('./BusinessRuleEngine');
 const AgenticAnalysisService = require('./AgenticAnalysisService');
 const AIAnalysisService = require('./AIAnalysisService');
+const ScannerService = require('./ScannerService');
 const CacheService = require('./CacheService');
 const logger = require('../utils/logger');
 
@@ -14,6 +15,7 @@ class GuardrailService {
     this.businessRuleEngine = BusinessRuleEngine;
     this.agenticAnalysisService = AgenticAnalysisService;
     this.aiAnalysisService = AIAnalysisService;
+    this.scannerService = new ScannerService();
     this.cacheService = CacheService;
   }
 
@@ -65,8 +67,11 @@ class GuardrailService {
       // Perform AI analysis (if enabled)
       const aiAnalysis = await this.performAIAnalysis(sanitizedRequest, customPrompt);
 
+      // Perform scanner analysis
+      const scannerAnalysis = await this.performScannerAnalysis(sanitizedRequest);
+
       // Combine results
-      const combinedResults = this.combineResults(businessRules, agenticAnalysis, aiAnalysis);
+      const combinedResults = this.combineResults(businessRules, agenticAnalysis, aiAnalysis, scannerAnalysis);
 
       // Add metadata
       const finalResult = {
@@ -78,7 +83,8 @@ class GuardrailService {
         services: {
           businessRules: businessRules.success,
           agenticAnalysis: agenticAnalysis.success,
-          aiAnalysis: aiAnalysis.success
+          aiAnalysis: aiAnalysis.success,
+          scannerAnalysis: scannerAnalysis.success
         }
       };
 
@@ -268,13 +274,104 @@ class GuardrailService {
   }
 
   /**
+   * Perform scanner analysis using LLM Guard scanners
+   * @param {Object} request - Request data
+   * @returns {Promise<Object>} Scanner analysis results
+   */
+  async performScannerAnalysis(request) {
+    try {
+      const { input, reasoning, output } = request;
+      
+      // Run comprehensive scans on all content
+      const inputScan = await this.scannerService.runComprehensiveScan(input || '');
+      const reasoningScan = await this.scannerService.runComprehensiveScan(reasoning || '');
+      const outputScan = await this.scannerService.runComprehensiveScan(output || '');
+
+      // Analyze results for security issues
+      const issues = [];
+      let riskLevel = 'NONE';
+
+      // Check for malicious URLs
+      if (inputScan.maliciousUrls.maliciousUrls.length > 0) {
+        issues.push(`Input contains ${inputScan.maliciousUrls.maliciousUrls.length} malicious URLs`);
+        riskLevel = 'HIGH';
+      }
+      if (reasoningScan.maliciousUrls.maliciousUrls.length > 0) {
+        issues.push(`Reasoning contains ${reasoningScan.maliciousUrls.maliciousUrls.length} malicious URLs`);
+        riskLevel = 'HIGH';
+      }
+      if (outputScan.maliciousUrls.maliciousUrls.length > 0) {
+        issues.push(`Output contains ${outputScan.maliciousUrls.maliciousUrls.length} malicious URLs`);
+        riskLevel = 'HIGH';
+      }
+
+      // Check for JSON validation issues
+      if (!outputScan.jsonValidation.isValid) {
+        issues.push(`Output JSON validation failed: ${outputScan.jsonValidation.issues.join(', ')}`);
+        riskLevel = riskLevel === 'NONE' ? 'MEDIUM' : riskLevel;
+      }
+
+      // Check for suspicious URLs
+      const totalSuspicious = inputScan.maliciousUrls.suspiciousUrls.length + 
+                             reasoningScan.maliciousUrls.suspiciousUrls.length + 
+                             outputScan.maliciousUrls.suspiciousUrls.length;
+      if (totalSuspicious > 0) {
+        issues.push(`Found ${totalSuspicious} suspicious URLs across all content`);
+        if (riskLevel === 'NONE') riskLevel = 'LOW';
+      }
+
+      // Determine verdict based on scanner results
+      let verdict = 'CONFIRM';
+      let reasonCode = 'BOUNDARY';
+      let action = 'ALLOW';
+
+      if (riskLevel === 'HIGH') {
+        verdict = 'OVERRIDE';
+        reasonCode = 'SECURITY';
+        action = 'BLOCK';
+      } else if (riskLevel === 'MEDIUM') {
+        verdict = 'OVERRIDE';
+        reasonCode = 'SECURITY';
+        action = 'ESCALATE';
+      } else if (riskLevel === 'LOW') {
+        reasonCode = 'SECURITY';
+        action = 'ESCALATE';
+      }
+
+      return {
+        success: true,
+        data: {
+          verdict,
+          reasonCode,
+          action,
+          evidence: issues,
+          riskLevel,
+          scans: {
+            input: inputScan,
+            reasoning: reasoningScan,
+            output: outputScan
+          }
+        }
+      };
+    } catch (error) {
+      logger.error('Scanner analysis failed', { error: error.message });
+      return {
+        success: false,
+        error: error.message,
+        data: null
+      };
+    }
+  }
+
+  /**
    * Combine results from all analysis services
    * @param {Object} businessRules - Business rule results
    * @param {Object} agenticAnalysis - Agentic analysis results
    * @param {Object} aiAnalysis - AI analysis results
+   * @param {Object} scannerAnalysis - Scanner analysis results
    * @returns {Object} Combined results
    */
-  combineResults(businessRules, agenticAnalysis, aiAnalysis) {
+  combineResults(businessRules, agenticAnalysis, aiAnalysis, scannerAnalysis) {
     let finalVerdict = 'CONFIRM';
     let finalReasonCode = 'BOUNDARY';
     let finalAction = 'ALLOW';
@@ -319,6 +416,19 @@ class GuardrailService {
       }
     }
 
+    // Scanner analysis (security-focused, high priority)
+    if (scannerAnalysis.success && scannerAnalysis.data) {
+      const scanner = scannerAnalysis.data;
+      if (scanner.verdict === 'OVERRIDE' && finalVerdict !== 'OVERRIDE') {
+        finalVerdict = 'OVERRIDE';
+        finalReasonCode = scanner.reasonCode;
+        finalAction = scanner.action;
+      }
+      if (scanner.evidence && scanner.evidence.length > 0) {
+        finalEvidence.push(...scanner.evidence);
+      }
+    }
+
     return {
       verdict: finalVerdict,
       reasonCode: finalReasonCode,
@@ -327,7 +437,8 @@ class GuardrailService {
       analysis: {
         businessRules: businessRules.success ? businessRules.data : null,
         agenticAnalysis: agenticAnalysis.success ? agenticAnalysis.data : null,
-        aiAnalysis: aiAnalysis.success ? aiAnalysis.data : null
+        aiAnalysis: aiAnalysis.success ? aiAnalysis.data : null,
+        scannerAnalysis: scannerAnalysis.success ? scannerAnalysis.data : null
       }
     };
   }
@@ -349,6 +460,10 @@ class GuardrailService {
       aiAnalysis: {
         enabled: this.aiAnalysisService.isEnabled(),
         status: this.aiAnalysisService.getStatus()
+      },
+      scannerAnalysis: {
+        enabled: true,
+        scanners: ['ReadingTime', 'JSONValidation', 'URLReachability', 'MaliciousURLs']
       },
       cache: {
         enabled: this.cacheService.isEnabled(),

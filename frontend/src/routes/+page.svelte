@@ -283,7 +283,13 @@
           input: customerPrompt,
           reasoning: reasoning,
           output: output,
-          customPrompt: customPrompt
+          customPrompt: customPrompt,
+          config: {
+            aiEnabled: aiEnabled,
+            loanLimit: loanLimit,
+            minLoan: minLoan,
+            sensitivityLevel: sensitivityLevel
+          }
         })
       });
 
@@ -441,11 +447,11 @@
 
       <!-- Right Section -->
       <div class="navbar-actions">
-        <a href="mailto:support@getfailsafe.com" class="contact-link">
+        <a href="https://getfailsafe.com/contact-us" class="contact-link" target="_blank" rel="noopener noreferrer">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M1 4L8 9L15 4M1 4V12C1 12.5523 1.44772 13 2 13H14C14.5523 13 15 12.5523 15 12V4M1 4C1 3.44772 1.44772 3 2 3H14C14.5523 3 15 3.44772 15 4" stroke="currentColor" stroke-width="1.5" fill="none"/>
           </svg>
-          <span>Support</span>
+          <span>Contact Us</span>
         </a>
         <div class="status-indicator">
           <div class="status-dot"></div>
@@ -705,6 +711,47 @@
         </div>
       </div>
     </div>
+
+    <!-- Workflow Integration Section -->
+    <div class="workflow-integration">
+      <h3>Where FailSafe Sight Fits in Your Workflow</h3>
+      <p class="workflow-intro">FailSafe Sight acts as a second-line defense that integrates seamlessly into your existing AI workflows, whether you're using manual processes or fully automated agentic systems.</p>
+      
+      <div class="workflow-grid">
+        <div class="workflow-card">
+          <div class="workflow-icon">🤖</div>
+          <h4>Agentic AI Workflows</h4>
+          <p>For fully automated AI systems, FailSafe Sight acts as the final checkpoint before any decision is executed. It validates the AI's reasoning and output against your business rules and security policies.</p>
+          <div class="workflow-steps">
+            <span class="step">1. AI Agent makes decision</span>
+            <span class="step">2. FailSafe Sight validates</span>
+            <span class="step">3. Decision executed or blocked</span>
+          </div>
+        </div>
+        
+        <div class="workflow-card">
+          <div class="workflow-icon">👥</div>
+          <h4>Manual Review Workflows</h4>
+          <p>For human-in-the-loop processes, FailSafe Sight provides automated risk assessment and evidence gathering, helping human reviewers make informed decisions faster.</p>
+          <div class="workflow-steps">
+            <span class="step">1. AI provides recommendation</span>
+            <span class="step">2. FailSafe Sight flags risks</span>
+            <span class="step">3. Human reviews with context</span>
+          </div>
+        </div>
+        
+        <div class="workflow-card">
+          <div class="workflow-icon">🔗</div>
+          <h4>Easy Integration</h4>
+          <p>Integrate with a single API call. No complex setup required - just send your AI's input, reasoning, and output, and get back a verdict with detailed analysis.</p>
+          <div class="workflow-steps">
+            <span class="step">1. Add API call to your workflow</span>
+            <span class="step">2. Configure your business rules</span>
+            <span class="step">3. Start protecting immediately</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- Simple Tab Navigation -->
@@ -735,8 +782,8 @@
       <!-- Scenario Selector -->
       <div class="scenario-selector">
         <div class="scenario-header">
-          <h3>Interactive Demo: See the AI Firewall in Action</h3>
-          <p>Watch FailSafe Sight block hallucinations, jailbreaks, and business risk in real-time. Select from realistic scenarios to see how our programmable AI firewall identifies and blocks threats that could evade generic trust & safety tools.</p>
+          <h3>Interactive Demo: Microloan Use Case</h3>
+          <p>This demo showcases how we helped a partner implement FailSafe Sight for their microloan disbursement system. The system processes applications ranging from $50 to $3,000, with our AI firewall acting as a second-line defense to catch fraud, emotional manipulation, and system bypass attempts that could evade initial AI screening. Select scenarios below to see the firewall in action, or edit the content to test different scenarios.</p>
         </div>
         <div class="scenario-grid">
           {#each scenarios as scenario}
@@ -788,8 +835,7 @@
             <div class="message-content">
               <textarea 
                 bind:value={customerPrompt}
-                placeholder="Applicant's loan request will appear here..."
-                readonly
+                placeholder="Applicant's loan request will appear here... (You can edit this text to test different scenarios)"
               ></textarea>
               <div class="document-upload">
                 <div class="upload-item">
@@ -821,16 +867,14 @@
                 <strong>Internal Reasoning:</strong>
                 <textarea 
                   bind:value={reasoning}
-                  placeholder="Agent's internal reasoning..."
-                  readonly
+                  placeholder="Agent's internal reasoning... (You can edit this to test different scenarios)"
                 ></textarea>
               </div>
               <div class="response">
                 <strong>Decision to Applicant:</strong>
                 <textarea 
                   bind:value={output}
-                  placeholder="Agent's decision..."
-                  readonly
+                  placeholder="Agent's decision... (You can edit this to test different scenarios)"
                 ></textarea>
               </div>
             </div>
@@ -1015,17 +1059,17 @@
           </div>
         </div>
 
-        <!-- Business Rules -->
+        <!-- Financial Thresholds -->
         <div class="config-section">
-          <h3>💰 Loan Limits</h3>
+          <h3>💰 Financial Thresholds</h3>
           <div class="setting-group">
             <div class="setting-item">
               <div class="setting-info">
-                <label for="max-loan">Maximum Loan Amount (SGD)</label>
-                <p>Automatically flag loans above this amount for review</p>
+                <label for="max-amount">Maximum Transaction Amount (SGD)</label>
+                <p>Automatically flag transactions above this amount for review</p>
               </div>
               <input 
-                id="max-loan"
+                id="max-amount"
                 type="number" 
                 bind:value={loanLimit}
                 min="100"
@@ -1035,11 +1079,11 @@
             </div>
             <div class="setting-item">
               <div class="setting-info">
-                <label for="min-loan">Minimum Loan Amount (SGD)</label>
-                <p>Automatically flag loans below this amount for review</p>
+                <label for="min-amount">Minimum Transaction Amount (SGD)</label>
+                <p>Automatically flag transactions below this amount for review</p>
               </div>
               <input 
-                id="min-loan"
+                id="min-amount"
                 type="number" 
                 bind:value={minLoan}
                 min="10"
@@ -4564,6 +4608,65 @@
       max-width: 280px;
       justify-content: center;
     }
+
+    .workflow-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .workflow-integration {
+      padding: var(--spacing-lg);
+    }
+
+    .workflow-intro {
+      font-size: var(--font-size-md);
+    }
+
+    .scenario-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .input-panel {
+      padding: var(--spacing-md);
+    }
+
+    .message-content textarea {
+      min-height: 120px;
+    }
+
+    .config-content {
+      padding: var(--spacing-md);
+    }
+
+    .business-rules-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-title {
+      font-size: 28px;
+    }
+
+    .hero-description {
+      font-size: 14px;
+    }
+
+    .workflow-card {
+      padding: var(--spacing-md);
+    }
+
+    .workflow-icon {
+      font-size: 2rem;
+    }
+
+    .simple-tabs {
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .simple-tab {
+      width: 100%;
+    }
   }
 
   /* Benefit Features */
@@ -4595,6 +4698,79 @@
 
   .scenario-type {
     color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* Workflow Integration Styles */
+  .workflow-integration {
+    margin-top: var(--spacing-2xl);
+    padding: var(--spacing-xl);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-secondary);
+  }
+
+  .workflow-integration h3 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+  }
+
+  .workflow-intro {
+    font-size: var(--font-size-lg);
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    line-height: 1.6;
+  }
+
+  .workflow-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+  }
+
+  .workflow-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    text-align: center;
+  }
+
+  .workflow-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .workflow-card h4 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-heading);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .workflow-card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .workflow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .workflow-steps .step {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
     font-weight: 500;
   }
 

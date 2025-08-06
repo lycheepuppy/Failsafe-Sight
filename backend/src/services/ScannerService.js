@@ -6,6 +6,10 @@
 
 const axios = require('axios');
 const logger = require('../utils/logger');
+const natural = require('natural');
+const compromise = require('compromise');
+const sentiment = require('sentiment');
+const ProfanityFilter = require('profanity-filter');
 
 class ScannerService {
   constructor() {
@@ -23,6 +27,68 @@ class ScannerService {
       'crypto', 'bitcoin', 'wallet', 'password', 'login', 'bank',
       'paypal', 'credit', 'card', 'social', 'security', 'ssn'
     ];
+
+    // Initialize profanity filter
+    this.profanityFilter = ProfanityFilter;
+    
+    // Bias detection patterns
+    this.biasPatterns = {
+      gender: [
+        /he\s+should|she\s+should|men\s+are|women\s+are|male\s+vs\s+female|gender\s+roles/i,
+        /stereotypical|traditional\s+roles|masculine|feminine|patriarchal/i
+      ],
+      racial: [
+        /race\s+based|ethnic\s+background|cultural\s+stereotypes|racial\s+profiling/i,
+        /white\s+vs\s+black|asian\s+vs\s+hispanic|minority\s+groups/i
+      ],
+      age: [
+        /young\s+people\s+are|old\s+people\s+are|millennials\s+vs\s+boomers/i,
+        /age\s+discrimination|generational\s+differences/i
+      ],
+      socioeconomic: [
+        /rich\s+vs\s+poor|wealthy\s+vs\s+poor|upper\s+class|lower\s+class/i,
+        /socioeconomic\s+status|education\s+level/i
+      ]
+    };
+
+    // Code detection patterns
+    this.codePatterns = [
+      /function\s+\w+\s*\(|const\s+\w+\s*=|let\s+\w+\s*=|var\s+\w+\s*=/i,
+      /if\s*\(|for\s*\(|while\s*\(|switch\s*\(|try\s*\{/i,
+      /import\s+|export\s+|require\s*\(|module\.exports/i,
+      /class\s+\w+|interface\s+\w+|enum\s+\w+/i,
+      /console\.log|debugger|breakpoint/i,
+      /<script>|<\/script>|<php|<%|<%=/i,
+      /SELECT\s+.*\s+FROM|INSERT\s+INTO|UPDATE\s+.*\s+SET|DELETE\s+FROM/i
+    ];
+
+    // Secrets detection patterns
+    this.secretPatterns = {
+      apiKeys: [
+        /api[_-]?key\s*[:=]\s*['"][a-zA-Z0-9]{20,}['"]/i,
+        /sk-[a-zA-Z0-9]{24,}|pk-[a-zA-Z0-9]{24,}/i,
+        /[a-zA-Z0-9]{32,}/i
+      ],
+      passwords: [
+        /password\s*[:=]\s*['"][^'"]{8,}['"]/i,
+        /passwd\s*[:=]\s*['"][^'"]{8,}['"]/i,
+        /pwd\s*[:=]\s*['"][^'"]{8,}['"]/i
+      ],
+      tokens: [
+        /token\s*[:=]\s*['"][a-zA-Z0-9]{20,}['"]/i,
+        /access[_-]?token\s*[:=]\s*['"][a-zA-Z0-9]{20,}['"]/i,
+        /bearer\s+[a-zA-Z0-9]{20,}/i
+      ],
+      emails: [
+        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i
+      ],
+      creditCards: [
+        /\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/i
+      ],
+      ssn: [
+        /\b\d{3}-\d{2}-\d{4}\b|\b\d{9}\b/i
+      ]
+    };
   }
 
   /**
@@ -404,6 +470,458 @@ class ScannerService {
   }
 
   /**
+   * Detect bias in content
+   * @param {string} content - Content to analyze
+   * @returns {Object} Bias detection results
+   */
+  detectBias(content) {
+    try {
+      if (!content || typeof content !== 'string') {
+        return {
+          success: false,
+          error: 'Invalid content provided',
+          biasDetected: false,
+          biasTypes: [],
+          confidence: 0
+        };
+      }
+
+      const biasTypes = [];
+      let totalMatches = 0;
+
+      // Check each bias category
+      for (const [category, patterns] of Object.entries(this.biasPatterns)) {
+        let categoryMatches = 0;
+        
+        for (const pattern of patterns) {
+          const matches = content.match(pattern);
+          if (matches) {
+            categoryMatches += matches.length;
+            totalMatches += matches.length;
+          }
+        }
+
+        if (categoryMatches > 0) {
+          biasTypes.push({
+            type: category,
+            matches: categoryMatches,
+            examples: this.extractBiasExamples(content, patterns)
+          });
+        }
+      }
+
+      const confidence = Math.min(totalMatches * 10, 100);
+      const biasDetected = biasTypes.length > 0;
+
+      return {
+        success: true,
+        biasDetected,
+        biasTypes,
+        confidence,
+        totalMatches
+      };
+    } catch (error) {
+      logger.error('Bias detection failed', { error: error.message });
+      return {
+        success: false,
+        error: error.message,
+        biasDetected: false,
+        biasTypes: [],
+        confidence: 0
+      };
+    }
+  }
+
+  /**
+   * Extract bias examples from content
+   * @param {string} content - Content to analyze
+   * @param {Array} patterns - Patterns to match
+   * @returns {Array} Examples found
+   */
+  extractBiasExamples(content, patterns) {
+    const examples = [];
+    for (const pattern of patterns) {
+      const matches = content.match(pattern);
+      if (matches) {
+        examples.push(...matches.slice(0, 3)); // Limit to 3 examples
+      }
+    }
+    return examples;
+  }
+
+  /**
+   * Detect toxicity in content
+   * @param {string} content - Content to analyze
+   * @returns {Object} Toxicity detection results
+   */
+  detectToxicity(content) {
+    try {
+      if (!content || typeof content !== 'string') {
+        return {
+          success: false,
+          error: 'Invalid content provided',
+          toxicityScore: 0,
+          isToxic: false,
+          profanityCount: 0
+        };
+      }
+
+      // Use sentiment analysis
+      const sentimentResult = new sentiment();
+      const analysis = sentimentResult.analyze(content);
+
+      // Check for profanity
+      const profanityResult = this.profanityFilter.clean(content);
+      const profanityCount = content !== profanityResult ? 1 : 0;
+
+      // Calculate toxicity score (0-100)
+      let toxicityScore = 0;
+      
+      // Negative sentiment contributes to toxicity
+      if (analysis.score < 0) {
+        toxicityScore += Math.abs(analysis.score) * 10;
+      }
+
+      // Profanity contributes to toxicity
+      toxicityScore += profanityCount * 15;
+
+      // Cap at 100
+      toxicityScore = Math.min(toxicityScore, 100);
+
+      const isToxic = toxicityScore > 30;
+
+      return {
+        success: true,
+        toxicityScore: Math.round(toxicityScore),
+        isToxic,
+        profanityCount,
+        sentimentScore: analysis.score,
+        negativeWords: analysis.negative,
+        positiveWords: analysis.positive
+      };
+    } catch (error) {
+      logger.error('Toxicity detection failed', { error: error.message });
+      return {
+        success: false,
+        error: error.message,
+        toxicityScore: 0,
+        isToxic: false,
+        profanityCount: 0
+      };
+    }
+  }
+
+  /**
+   * Detect code in content
+   * @param {string} content - Content to analyze
+   * @returns {Object} Code detection results
+   */
+  detectCode(content) {
+    try {
+      if (!content || typeof content !== 'string') {
+        return {
+          success: false,
+          error: 'Invalid content provided',
+          codeDetected: false,
+          codeTypes: [],
+          confidence: 0
+        };
+      }
+
+      const codeTypes = [];
+      let totalMatches = 0;
+
+      // Check for programming language patterns
+      const languagePatterns = {
+        javascript: [
+          /function\s+\w+\s*\(|const\s+\w+\s*=|let\s+\w+\s*=|var\s+\w+\s*=/i,
+          /if\s*\(|for\s*\(|while\s*\(|switch\s*\(|try\s*\{/i,
+          /import\s+|export\s+|require\s*\(|module\.exports/i,
+          /console\.log|debugger|breakpoint/i
+        ],
+        python: [
+          /def\s+\w+\s*\(|import\s+\w+|from\s+\w+\s+import/i,
+          /if\s+.*:|for\s+.*:|while\s+.*:|try:|except:/i,
+          /print\s*\(|return\s+|class\s+\w+/i
+        ],
+        sql: [
+          /SELECT\s+.*\s+FROM|INSERT\s+INTO|UPDATE\s+.*\s+SET|DELETE\s+FROM/i,
+          /WHERE\s+|GROUP\s+BY|ORDER\s+BY|JOIN\s+/i
+        ],
+        html: [
+          /<[^>]+>|<\/[^>]+>|<[^>]+\/>/i,
+          /<!DOCTYPE|html>|head>|body>|div>|span>/i
+        ],
+        php: [
+          /<\?php|\?>|<%|<%=/i,
+          /\$[a-zA-Z_][a-zA-Z0-9_]*\s*=/i
+        ]
+      };
+
+      for (const [language, patterns] of Object.entries(languagePatterns)) {
+        let languageMatches = 0;
+        
+        for (const pattern of patterns) {
+          const matches = content.match(pattern);
+          if (matches) {
+            languageMatches += matches.length;
+            totalMatches += matches.length;
+          }
+        }
+
+        if (languageMatches > 0) {
+          codeTypes.push({
+            language,
+            matches: languageMatches,
+            confidence: Math.min(languageMatches * 20, 100)
+          });
+        }
+      }
+
+      const codeDetected = codeTypes.length > 0;
+      const confidence = codeDetected ? Math.min(totalMatches * 15, 100) : 0;
+
+      return {
+        success: true,
+        codeDetected,
+        codeTypes,
+        confidence,
+        totalMatches
+      };
+    } catch (error) {
+      logger.error('Code detection failed', { error: error.message });
+      return {
+        success: false,
+        error: error.message,
+        codeDetected: false,
+        codeTypes: [],
+        confidence: 0
+      };
+    }
+  }
+
+  /**
+   * Detect secrets and sensitive information
+   * @param {string} content - Content to analyze
+   * @returns {Object} Secrets detection results
+   */
+  detectSecrets(content) {
+    try {
+      if (!content || typeof content !== 'string') {
+        return {
+          success: false,
+          error: 'Invalid content provided',
+          secretsDetected: false,
+          secretTypes: [],
+          riskLevel: 'NONE'
+        };
+      }
+
+      const secretTypes = [];
+      let totalSecrets = 0;
+
+      for (const [type, patterns] of Object.entries(this.secretPatterns)) {
+        let typeMatches = 0;
+        const foundSecrets = [];
+        
+        for (const pattern of patterns) {
+          const matches = content.match(pattern);
+          if (matches) {
+            typeMatches += matches.length;
+            totalSecrets += matches.length;
+            
+            // Add first few matches as examples (sanitized)
+            matches.slice(0, 2).forEach(match => {
+              foundSecrets.push(this.sanitizeSecret(match));
+            });
+          }
+        }
+
+        if (typeMatches > 0) {
+          secretTypes.push({
+            type,
+            count: typeMatches,
+            examples: foundSecrets
+          });
+        }
+      }
+
+      const secretsDetected = secretTypes.length > 0;
+      let riskLevel = 'NONE';
+      
+      if (totalSecrets > 5) riskLevel = 'HIGH';
+      else if (totalSecrets > 2) riskLevel = 'MEDIUM';
+      else if (totalSecrets > 0) riskLevel = 'LOW';
+
+      return {
+        success: true,
+        secretsDetected,
+        secretTypes,
+        totalSecrets,
+        riskLevel
+      };
+    } catch (error) {
+      logger.error('Secrets detection failed', { error: error.message });
+      return {
+        success: false,
+        error: error.message,
+        secretsDetected: false,
+        secretTypes: [],
+        riskLevel: 'NONE'
+      };
+    }
+  }
+
+  /**
+   * Sanitize secret for display (hide sensitive parts)
+   * @param {string} secret - Secret to sanitize
+   * @returns {string} Sanitized secret
+   */
+  sanitizeSecret(secret) {
+    if (secret.length <= 8) {
+      return '*'.repeat(secret.length);
+    }
+    
+    const visibleChars = Math.min(4, Math.floor(secret.length * 0.2));
+    const hiddenChars = secret.length - visibleChars;
+    
+    return secret.substring(0, visibleChars) + '*'.repeat(hiddenChars);
+  }
+
+  /**
+   * Detect language of content
+   * @param {string} content - Content to analyze
+   * @returns {Object} Language detection results
+   */
+  detectLanguage(content) {
+    try {
+      if (!content || typeof content !== 'string') {
+        return {
+          success: false,
+          error: 'Invalid content provided',
+          detectedLanguage: 'unknown',
+          confidence: 0
+        };
+      }
+
+      // Simple language detection based on common patterns
+      const languagePatterns = {
+        english: /[a-zA-Z]/g,
+        spanish: /[áéíóúñü]/gi,
+        french: /[àâäéèêëïîôöùûüÿç]/gi,
+        german: /[äöüß]/gi,
+        chinese: /[\u4e00-\u9fff]/g,
+        japanese: /[\u3040-\u309f\u30a0-\u30ff]/g,
+        korean: /[\uac00-\ud7af]/g,
+        arabic: /[\u0600-\u06ff]/g,
+        russian: /[\u0400-\u04ff]/g
+      };
+
+      let maxScore = 0;
+      let detectedLanguage = 'unknown';
+
+      for (const [language, pattern] of Object.entries(languagePatterns)) {
+        const matches = content.match(pattern);
+        const score = matches ? matches.length : 0;
+        
+        if (score > maxScore) {
+          maxScore = score;
+          detectedLanguage = language;
+        }
+      }
+
+      const confidence = Math.min((maxScore / content.length) * 100, 100);
+
+      return {
+        success: true,
+        detectedLanguage,
+        confidence: Math.round(confidence),
+        totalCharacters: content.length
+      };
+    } catch (error) {
+      logger.error('Language detection failed', { error: error.message });
+      return {
+        success: false,
+        error: error.message,
+        detectedLanguage: 'unknown',
+        confidence: 0
+      };
+    }
+  }
+
+  /**
+   * Check factual consistency (basic implementation)
+   * @param {string} content - Content to analyze
+   * @returns {Object} Factual consistency results
+   */
+  checkFactualConsistency(content) {
+    try {
+      if (!content || typeof content !== 'string') {
+        return {
+          success: false,
+          error: 'Invalid content provided',
+          consistencyScore: 0,
+          issues: []
+        };
+      }
+
+      const issues = [];
+      let consistencyScore = 100;
+
+      // Check for contradictory statements
+      const contradictions = [
+        { pattern: /(yes|no|true|false).*?(no|yes|false|true)/gi, penalty: 20 },
+        { pattern: /(always|never).*?(sometimes|occasionally)/gi, penalty: 15 },
+        { pattern: /(all|every|none).*?(some|few|many)/gi, penalty: 10 }
+      ];
+
+      for (const contradiction of contradictions) {
+        const matches = content.match(contradiction.pattern);
+        if (matches) {
+          issues.push(`Contradictory statements found: ${matches.length} instances`);
+          consistencyScore -= contradiction.penalty * matches.length;
+        }
+      }
+
+      // Check for vague statements
+      const vaguePatterns = [
+        /maybe|perhaps|possibly|might|could|seems like/i,
+        /I think|I believe|in my opinion|as far as I know/i
+      ];
+
+      let vagueCount = 0;
+      for (const pattern of vaguePatterns) {
+        const matches = content.match(pattern);
+        if (matches) {
+          vagueCount += matches.length;
+        }
+      }
+
+      if (vagueCount > 0) {
+        issues.push(`Vague statements found: ${vagueCount} instances`);
+        consistencyScore -= vagueCount * 5;
+      }
+
+      consistencyScore = Math.max(0, consistencyScore);
+
+      return {
+        success: true,
+        consistencyScore: Math.round(consistencyScore),
+        issues,
+        totalIssues: issues.length
+      };
+    } catch (error) {
+      logger.error('Factual consistency check failed', { error: error.message });
+      return {
+        success: false,
+        error: error.message,
+        consistencyScore: 0,
+        issues: []
+      };
+    }
+  }
+
+  /**
    * Run comprehensive scan on content
    * @param {string} content - Content to scan
    * @returns {Object} Comprehensive scan results
@@ -413,6 +931,12 @@ class ScannerService {
       readingTime: this.calculateReadingTime(content),
       jsonValidation: this.validateJSON(content),
       maliciousUrls: this.detectMaliciousURLs(content),
+      biasDetection: this.detectBias(content),
+      toxicityDetection: this.detectToxicity(content),
+      codeDetection: this.detectCode(content),
+      secretsDetection: this.detectSecrets(content),
+      languageDetection: this.detectLanguage(content),
+      factualConsistency: this.checkFactualConsistency(content),
       urlReachability: null
     };
 

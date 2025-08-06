@@ -14,7 +14,7 @@ class GuardrailService {
   constructor() {
     this.businessRuleEngine = BusinessRuleEngine;
     this.agenticAnalysisService = AgenticAnalysisService;
-    this.aiAnalysisService = AIAnalysisService;
+    this.aiAnalysisService = new AIAnalysisService();
     this.scannerService = new ScannerService();
     this.cacheService = CacheService;
   }
@@ -507,7 +507,9 @@ class GuardrailService {
       },
       agenticAnalysis: {
         enabled: true,
-        patternsCount: this.agenticAnalysisService.getPatterns().length
+        patternsCount: this.agenticAnalysisService.manipulationPatterns.length + 
+                      this.agenticAnalysisService.politicalManipulationPatterns.length +
+                      this.agenticAnalysisService.jailbreakPatterns.length
       },
       aiAnalysis: {
         enabled: this.aiAnalysisService.isEnabled(),

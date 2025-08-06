@@ -15,10 +15,11 @@ class GuardrailController {
    * Check guardrails for a request
    * @param {Object} requestData - Request data
    * @param {string} customPrompt - Optional custom prompt
+   * @param {boolean} bypassCache - Optional flag to bypass cache for debugging
    * @returns {Promise<Object>} Guardrail check results
    */
-  async checkGuardrails(requestData, customPrompt = '') {
-    return await this.guardrailService.checkGuardrails(requestData, customPrompt);
+  async checkGuardrails(requestData, customPrompt = '', bypassCache = false) {
+    return await this.guardrailService.checkGuardrails(requestData, customPrompt, bypassCache);
   }
 
   /**

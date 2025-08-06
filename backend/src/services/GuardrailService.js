@@ -23,9 +23,10 @@ class GuardrailService {
    * Perform comprehensive guardrail check
    * @param {Object} requestData - Request data
    * @param {string} customPrompt - Optional custom prompt
+   * @param {boolean} bypassCache - Optional flag to bypass cache for debugging
    * @returns {Promise<Object>} Guardrail check results
    */
-  async checkGuardrails(requestData, customPrompt = '') {
+  async checkGuardrails(requestData, customPrompt = '', bypassCache = false) {
     const startTime = Date.now();
     
     try {
@@ -39,9 +40,13 @@ class GuardrailService {
         };
       }
 
-      // Check cache first
+      // Check cache first (unless bypassing)
       const cacheKey = this.cacheService.generateKey({ ...requestData, customPrompt });
-      const cachedResult = this.cacheService.get(cacheKey);
+      let cachedResult = null;
+      
+      if (!bypassCache) {
+        cachedResult = this.cacheService.get(cacheKey);
+      }
       
       if (cachedResult) {
         logger.info('Guardrail check served from cache', {

@@ -281,6 +281,26 @@
     loading = true;
     result = null;
 
+    // Debug: Log what we're sending
+    const requestData = {
+      input: customerPrompt,
+      reasoning: reasoning,
+      output: output,
+      customPrompt: customPrompt,
+      config: {
+        aiEnabled: aiEnabled,
+        loanLimit: loanLimit,
+        minLoan: minLoan,
+        sensitivityLevel: sensitivityLevel
+      }
+    };
+    
+    console.log('🔍 Sending request data:', requestData);
+    console.log('🔍 Input length:', customerPrompt?.length);
+    console.log('🔍 Input preview:', customerPrompt?.substring(0, 100));
+    console.log('🔍 Reasoning preview:', reasoning?.substring(0, 100));
+    console.log('🔍 Output preview:', output?.substring(0, 100));
+
     try {
       const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       const response = await fetch(`${API_BASE_URL}/v1/guardrails/check`, {
@@ -288,27 +308,17 @@
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          input: customerPrompt,
-          reasoning: reasoning,
-          output: output,
-          customPrompt: customPrompt,
-          config: {
-            aiEnabled: aiEnabled,
-            loanLimit: loanLimit,
-            minLoan: minLoan,
-            sensitivityLevel: sensitivityLevel
-          }
-        })
+        body: JSON.stringify(requestData)
       });
 
       if (response.ok) {
         result = await response.json();
+        console.log('✅ Received response:', result);
       } else {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('❌ Error:', error);
       alert('Error running check. Please try again.');
     } finally {
       loading = false;
@@ -892,6 +902,20 @@
 
         <button class="run-check" on:click={runCheck} disabled={loading || !customerPrompt}>
           {loading ? 'Analyzing...' : '🔍 Run AI Fraud Detection'}
+        </button>
+        
+        <!-- Debug button to test form values -->
+        <button 
+          class="debug-check" 
+          on:click={() => {
+            console.log('🔍 DEBUG - Current form values:');
+            console.log('Input:', customerPrompt);
+            console.log('Reasoning:', reasoning);
+            console.log('Output:', output);
+          }}
+          style="margin-top: 10px; background: #666; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;"
+        >
+          🐛 Debug Form Values
         </button>
       </div>
 

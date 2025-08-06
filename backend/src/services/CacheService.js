@@ -40,13 +40,13 @@ class CacheService {
   generateKey(request) {
     const { input, reasoning, output, customPrompt } = request;
     const keyData = {
-      input: input?.substring(0, 100), // Truncate for key size
-      reasoning: reasoning?.substring(0, 100),
-      output: output?.substring(0, 100),
-      customPrompt: customPrompt?.substring(0, 50)
+      input: input?.substring(0, 200), // Increased from 100 to 200 for better uniqueness
+      reasoning: reasoning?.substring(0, 200),
+      output: output?.substring(0, 200),
+      customPrompt: customPrompt?.substring(0, 100)
     };
     
-    return `guardrail:${Buffer.from(JSON.stringify(keyData)).toString('base64').substring(0, 50)}`;
+    return `guardrail:${Buffer.from(JSON.stringify(keyData)).toString('base64').substring(0, 100)}`;
   }
 
   /**

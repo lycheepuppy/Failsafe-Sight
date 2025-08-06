@@ -141,8 +141,8 @@ class BusinessRuleEngine {
    */
   checkMaxLoanAmount(output) {
     try {
-      // Look specifically for the loan amount being approved - very precise matching
-      const approveMatch = output.match(/approve.*?\$(\d+(?:,\d{3})*(?:\.\d{2})?)/i);
+      // Look for loan amounts in the output - prioritize amounts near "approve" or "loan"
+      const approveMatch = output.match(/(?:approve|loan).*?\$(\d+(?:,\d{3})*(?:\.\d{2})?)/i);
       if (approveMatch) {
         const loanAmount = parseFloat(approveMatch[1].replace(/,/g, ''));
         const maxLimit = config.businessRules.defaultLoanLimit || 3000;
@@ -156,6 +156,46 @@ class BusinessRuleEngine {
           };
         }
       }
+      
+      // Fallback: look for all amounts and find the one that's most likely the loan amount
+      const amountMatches = output.match(/\$(\d+(?:,\d{3})*(?:\.\d{2})?)/g);
+      if (amountMatches) {
+        // Look for amounts that appear near loan-related keywords
+        const loanKeywords = ['loan', 'approve', 'request', 'amount', 'disburse'];
+        let bestMatch = null;
+        let bestScore = 0;
+        
+        amountMatches.forEach(match => {
+          const amount = parseFloat(match.replace(/[$,]/g, ''));
+          const matchIndex = output.indexOf(match);
+          
+          // Check proximity to loan keywords
+          let score = 0;
+          loanKeywords.forEach(keyword => {
+            const keywordIndex = output.toLowerCase().indexOf(keyword, Math.max(0, matchIndex - 50));
+            if (keywordIndex !== -1 && Math.abs(keywordIndex - matchIndex) < 100) {
+              score += 1;
+            }
+          });
+          
+          if (score > bestScore) {
+            bestScore = score;
+            bestMatch = amount;
+          }
+        });
+        
+        if (bestMatch && bestScore > 0) {
+          const maxLimit = config.businessRules.defaultLoanLimit || 3000;
+          if (bestMatch > maxLimit) {
+            return {
+              matched: true,
+              amount: bestMatch,
+              reason: `Loan amount $${bestMatch} exceeds maximum limit of $${maxLimit}`
+            };
+          }
+        }
+      }
+      
       return { matched: false };
     } catch (error) {
       logger.error('Error checking maximum loan amount', { error: error.message, output });
@@ -165,10 +205,21 @@ class BusinessRuleEngine {
 
   checkMinLoanAmount(output) {
     try {
-      // Look specifically for the loan amount being approved - very precise matching
-      const approveMatch = output.match(/approve.*?\$(\d+(?:,\d{3})*(?:\.\d{2})?)/i);
-      if (approveMatch) {
-        const loanAmount = parseFloat(approveMatch[1].replace(/,/g, ''));
+      // Look for loan amounts in the output - more flexible matching
+      const amountMatches = output.match(/\$(\d+(?:,\d{3})*(?:\.\d{2})?)/g);
+      if (amountMatches) {
+        // Find the largest amount (likely the loan amount)
+        let maxAmount = 0;
+        let loanAmount = 0;
+        
+        amountMatches.forEach(match => {
+          const amount = parseFloat(match.replace(/[$,]/g, ''));
+          if (amount > maxAmount) {
+            maxAmount = amount;
+            loanAmount = amount;
+          }
+        });
+        
         const minLimit = config.businessRules.defaultMinLoan || 100;
         
         // Check if amount is below minimum threshold

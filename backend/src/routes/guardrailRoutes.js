@@ -41,8 +41,12 @@ router.post('/check',
   validateRequest,
   async (req, res) => {
     try {
-      const { input, reasoning, output, customPrompt } = req.body;
-      const result = await guardrailController.checkGuardrails({ input, reasoning, output }, customPrompt || '');
+      const { input, reasoning, output, customPrompt, bypassCache } = req.body;
+      const result = await guardrailController.checkGuardrails(
+        { input, reasoning, output }, 
+        customPrompt || '', 
+        bypassCache || false
+      );
       res.json(result);
     } catch (error) {
       res.status(500).json({

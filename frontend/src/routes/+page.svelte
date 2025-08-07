@@ -291,7 +291,8 @@
         aiEnabled: aiEnabled,
         loanLimit: loanLimit,
         minLoan: minLoan,
-        sensitivityLevel: sensitivityLevel
+        sensitivityLevel: sensitivityLevel,
+        businessRules: businessRules.filter(rule => rule.enabled)
       }
     };
     
@@ -327,8 +328,25 @@
 
   // Simplified config functions
   function saveConfig() {
-    // In a real app, this would save to backend
-    alert('Configuration saved!');
+    // Save configuration to localStorage for persistence
+    const config = {
+      aiEnabled,
+      loanLimit,
+      minLoan,
+      sensitivityLevel,
+      customPrompt,
+      businessRules,
+      showScanners,
+      showBusinessRules
+    };
+    
+    try {
+      localStorage.setItem('failsafe-config', JSON.stringify(config));
+      alert('Configuration saved successfully!');
+    } catch (error) {
+      console.error('Failed to save config:', error);
+      alert('Failed to save configuration. Please try again.');
+    }
   }
 
   function resetConfig() {
@@ -337,6 +355,29 @@
     minLoan = 50;
     sensitivityLevel = 'balanced';
     customPrompt = '';
+    showScanners = false;
+    showBusinessRules = false;
+    
+    // Reset business rules to defaults
+    businessRules.forEach(rule => {
+      rule.enabled = true;
+      // Reset thresholds to original values
+      switch(rule.id) {
+        case 'HBC-1': rule.threshold = 60; break;
+        case 'HBC-2': rule.threshold = 3; break;
+        case 'HBC-3': rule.threshold = 7; break;
+        case 'HBC-4': rule.threshold = 200; break;
+        case 'HBC-5': rule.threshold = 2; break;
+        case 'HBC-6': rule.threshold = 14400; break;
+        case 'HBC-7': rule.threshold = 10; break;
+        case 'HBC-8': rule.threshold = 5; break;
+        case 'HBC-9': rule.threshold = 500; break;
+      }
+    });
+    
+    // Clear saved config
+    localStorage.removeItem('failsafe-config');
+    alert('Configuration reset to defaults!');
   }
 
   // Helper functions for better UX
@@ -408,8 +449,41 @@
     }, 100);
   }
 
+  // Load saved configuration
+  function loadSavedConfig() {
+    try {
+      const savedConfig = localStorage.getItem('failsafe-config');
+      if (savedConfig) {
+        const config = JSON.parse(savedConfig);
+        aiEnabled = config.aiEnabled ?? true;
+        loanLimit = config.loanLimit ?? 3000;
+        minLoan = config.minLoan ?? 50;
+        sensitivityLevel = config.sensitivityLevel ?? 'balanced';
+        customPrompt = config.customPrompt ?? '';
+        showScanners = config.showScanners ?? false;
+        showBusinessRules = config.showBusinessRules ?? false;
+        
+        // Load business rules if they exist
+        if (config.businessRules) {
+          businessRules.forEach((rule, index) => {
+            const savedRule = config.businessRules[index];
+            if (savedRule) {
+              rule.enabled = savedRule.enabled ?? true;
+              rule.threshold = savedRule.threshold ?? rule.threshold;
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load saved config:', error);
+    }
+  }
+
   // Navbar scroll functionality
   onMount(() => {
+    // Load saved configuration
+    loadSavedConfig();
+    
     const navbar = document.querySelector('.navbar');
     let isScrolled = false;
 
@@ -508,27 +582,28 @@
         </div>
         
         <h1 class="hero-title">
-          <span class="title-line">Programmable AI Firewall</span>
-          <span class="title-line">Enterprise-Grade</span>
+          <span class="title-line">AI Security That Actually Works</span>
+          <span class="title-line">Enterprise-Grade Protection</span>
         </h1>
         
         <p class="hero-description">
-          Enforce <strong>ABS/MAS-aligned guardrails</strong> and <strong>ISO/OWASP-grade security policies</strong> 
-          across all LLM & GenAI workflows—stopping prompt injection, jailbreaks, and risky outputs before deployment.
+          Stop AI fraud, jailbreaks, and compliance violations in real-time. Our <strong>programmable guardrails</strong> 
+          and <strong>intelligent risk analysis</strong> protect your LLM applications from threats that traditional 
+          security tools miss.
         </p>
         
         <div class="hero-metrics">
           <div class="metric">
-            <div class="metric-value">99%+</div>
-            <div class="metric-label">Threat Detection</div>
+            <div class="metric-value">Enterprise</div>
+            <div class="metric-label">Grade Security</div>
           </div>
           <div class="metric">
-            <div class="metric-value">&lt;50ms</div>
-            <div class="metric-label">Response Time</div>
+            <div class="metric-value">Real-time</div>
+            <div class="metric-label">Protection</div>
           </div>
           <div class="metric">
             <div class="metric-value">24/7</div>
-            <div class="metric-label">Protection</div>
+            <div class="metric-label">Monitoring</div>
           </div>
         </div>
         
@@ -539,7 +614,7 @@
                 <path d="M8 1L10.5 6L16 6.5L11.5 10.5L13 16L8 13L3 16L4.5 10.5L0 6.5L5.5 6L8 1Z" stroke="#00ff88" stroke-width="1.5" fill="none"/>
               </svg>
             </div>
-            <span>Dynamic rule enforcement with hard boundaries & financial thresholds</span>
+            <span>Real-time fraud detection with programmable business rules</span>
           </div>
           <div class="feature">
             <div class="feature-icon">
@@ -548,7 +623,7 @@
                 <circle cx="8" cy="8" r="7" stroke="#00ff88" stroke-width="1.5" fill="none"/>
               </svg>
             </div>
-            <span>Context-aware AI sentinel with intent & business impact analysis</span>
+            <span>AI-powered risk analysis that understands context & intent</span>
           </div>
           <div class="feature">
             <div class="feature-icon">
@@ -557,7 +632,7 @@
                 <rect x="1" y="1" width="14" height="14" rx="2" stroke="#00ff88" stroke-width="1.5" fill="none"/>
               </svg>
             </div>
-            <span>Transparent & compliant with tamper-proof audit trails</span>
+            <span>Compliance-ready with detailed audit trails & evidence</span>
           </div>
         </div>
         
@@ -567,7 +642,7 @@
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M8 4V12M4 8H12" stroke="currentColor" stroke-width="2" fill="none"/>
               </svg>
-              <span>See Banking-Grade Demo</span>
+              <span>Demo Financial Service Use Case</span>
             </div>
             <div class="btn-glow"></div>
           </button>
@@ -576,13 +651,13 @@
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M6 2L14 8L6 14V11H2V5H6V2Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
               </svg>
-              <span>Request Walkthrough</span>
+              <span>Check our integration docs</span>
             </div>
           </button>
         </div>
         
         <div class="hero-trust">
-          <span class="trust-text">Begin showing compliance evidence for executive review within days</span>
+          <span class="trust-text">Secure enterprise grade secure LLM applications in days, not months.</span>
         </div>
       </div>
     </div>
@@ -590,7 +665,7 @@
 
   <!-- Why Failsafe Sight? -->
   <section class="benefits">
-    <h2>Why Failsafe Sight?</h2>
+    <h2>Why Leading Companies Choose Failsafe Sight</h2>
     <div class="benefits-grid">
       <div class="benefit-card">
         <div class="benefit-icon">
@@ -599,8 +674,8 @@
             <path d="M12 8L16 10V12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12V10L12 8Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
           </svg>
         </div>
-        <h3>Dynamic Rule Enforcement</h3>
-        <p>Define hard boundaries, financial thresholds, and semantic filters tailored to your business logic. Stop risky transactions or prompts at scale with configurable policies.</p>
+        <h3>Smart Rule Engine</h3>
+        <p>Create custom business rules that automatically detect fraud patterns, enforce financial limits, and filter inappropriate content. No coding required—configure everything through our intuitive interface.</p>
         <div class="benefit-features">
           <span class="feature-tag">Hard Boundaries</span>
           <span class="feature-tag">Financial Controls</span>
@@ -613,8 +688,8 @@
             <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" fill="none"/>
           </svg>
         </div>
-        <h3>Context-Aware Sentinel</h3>
-        <p>Our proprietary AI analyst interprets intent, reasoning, and potential business impact—not just patterns. Ensures decisions align with corporate, legal, and financial policies.</p>
+        <h3>Intelligent Risk Analysis</h3>
+        <p>Our AI doesn't just look for patterns—it understands context, intent, and business impact. It catches sophisticated attacks that traditional rule-based systems miss, while reducing false positives.</p>
         <div class="benefit-features">
           <span class="feature-tag">Intent Analysis</span>
           <span class="feature-tag">Business Impact</span>
@@ -627,8 +702,8 @@
             <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" fill="none"/>
           </svg>
         </div>
-        <h3>Transparent & Compliant</h3>
-        <p>Built with open-source roots and extended for enterprise-scale controls. Every action is logged for auditability, with full traceability and tamper-proof evidence suitable for regulatory inspections.</p>
+        <h3>Enterprise-Ready Compliance</h3>
+        <p>Built for regulated industries with comprehensive audit trails, detailed evidence collection, and compliance reporting. Every decision is documented and traceable for regulatory requirements.</p>
         <div class="benefit-features">
           <span class="feature-tag">Audit Trails</span>
           <span class="feature-tag">Regulatory Ready</span>
@@ -683,17 +758,17 @@
       <div class="steps-grid">
         <div class="step-card">
           <div class="step-number">1</div>
-          <h4>Set your AI boundaries</h4>
+          <h4>Set policy thresholds for hard limits and boundary controls especially financial numbers</h4>
           <p>Define hard limits and guardrails for your LLM applications</p>
         </div>
         <div class="step-card">
           <div class="step-number">2</div>
-          <h4>Add business rules</h4>
-          <p>Configure financial exposure, compliance, and operational limits</p>
+          <h4>Trust and Safety content moderation - auto filtering of off topic, racial, religious and other sensitive topics</h4>
+          <p>Configure content filtering and safety measures</p>
         </div>
         <div class="step-card">
           <div class="step-number">3</div>
-          <h4>Deploy agentic analyst</h4>
+          <h4>Deploy Agentic Risk analyst - leverage our proprietary AI risk agent that acts as a second layer of defence</h4>
           <p>Activate our AI sentinel for real-time risk assessment</p>
         </div>
         <div class="step-card">
@@ -792,8 +867,8 @@
             <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" fill="none"/>
           </svg>
         </div>
-        <h3>Regulated Enterprises</h3>
-        <p>Enforce consent, audit, and data privacy metrics in real-time for healthcare, legal, and government AI applications.</p>
+        <h3>Fast Moving Tech Companies</h3>
+        <p>We help them deploy and secure LLM use cases for customer refunds, automatic approval flows, sales closing/invoicing without having to worry about losing millions of dollars to jailbreaking.</p>
       </div>
       <div class="use-case-card">
         <div class="use-case-icon">
@@ -835,8 +910,8 @@
       <!-- Scenario Selector -->
       <div class="scenario-selector">
         <div class="scenario-header">
-          <h3>Banking-Grade Demo: Microloan Use Case</h3>
-          <p>This demo showcases how we helped a partner implement FailSafe Sight for their microloan disbursement system. The system processes applications ranging from $50 to $3,000, with our AI firewall acting as a second-line defense to catch fraud, emotional manipulation, and system bypass attempts that could evade initial AI screening. The scenarios below demonstrate different edge cases and abuse patterns to stress-test the system's ability to distinguish between legitimate microloan requests and potential threats.</p>
+          <h3>See Failsafe Sight in Action</h3>
+          <p>Experience how our AI security platform protects a financial services application from fraud, manipulation, and compliance violations. This interactive demo shows real scenarios where traditional security fails, but Failsafe Sight succeeds. Try different scenarios to see how our intelligent guardrails work.</p>
         </div>
         <div class="scenario-grid">
           {#each scenarios as scenario}
@@ -935,22 +1010,16 @@
         </div>
 
         <button class="run-check" on:click={runCheck} disabled={loading || !customerPrompt}>
-          {loading ? 'Analyzing...' : '🔍 Run AI Fraud Detection'}
+          {loading ? '🔍 Analyzing with AI...' : '🔍 Run FailSafe Sight API'}
         </button>
         
-        <!-- Debug button to test form values -->
-        <button 
-          class="debug-check" 
-          on:click={() => {
-            console.log('🔍 DEBUG - Current form values:');
-            console.log('Input:', customerPrompt);
-            console.log('Reasoning:', reasoning);
-            console.log('Output:', output);
-          }}
-          style="margin-top: 10px; background: #666; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;"
-        >
-          🐛 Debug Form Values
-        </button>
+        <div class="demo-info">
+          <p class="info-text">
+            <strong>💡 Tip:</strong> Try adjusting the settings in the "Settings" tab to see how different configurations affect the analysis results.
+          </p>
+        </div>
+        
+
       </div>
 
       <!-- Results -->
@@ -1099,8 +1168,8 @@
     <div class="config-container" data-section="config">
       <div class="config-header">
         <div>
-          <h2>Guardrail Settings</h2>
-          <p>Configure how Failsafe analyzes and responds to potential fraud</p>
+          <h2>Configure Your AI Security</h2>
+          <p>Customize detection sensitivity, business rules, and response actions to match your security requirements</p>
         </div>
         <div class="config-actions">
           <button class="btn-secondary" on:click={resetConfig}>Reset to Defaults</button>
@@ -1198,7 +1267,7 @@
                       </div>
                       <div class="rule-status">
                         <label class="toggle">
-                          <input type="checkbox" checked={rule.enabled}>
+                          <input type="checkbox" bind:checked={rule.enabled}>
                           <span class="slider"></span>
                         </label>
                       </div>
@@ -1213,7 +1282,7 @@
                         <input 
                           id="threshold-{rule.id}"
                           type="number" 
-                          value={rule.threshold}
+                          bind:value={rule.threshold}
                           min="1"
                           max="100"
                           class="threshold-input"
@@ -1343,8 +1412,8 @@
     <div class="integration-guide-tab" data-section="integration-guide">
       <div class="integration-guide-content">
         <div class="section-header">
-          <h2>API Integration Guide</h2>
-          <p>Whether applied to financial disbursements, claims processing, or operational decisioning, Sight ensures AI output remains aligned with business intent and regulatory requirements.</p>
+          <h2>Get Started in Minutes</h2>
+          <p>Integrate Failsafe Sight into your AI applications with a single API call. Our comprehensive documentation and examples make it easy to protect your LLM workflows from day one.</p>
         </div>
         
         <div class="api-endpoints">
@@ -2516,6 +2585,26 @@
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+  }
+
+  /* Demo Info */
+  .demo-info {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: rgba(0, 255, 136, 0.05);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    border-radius: var(--radius-md);
+  }
+
+  .info-text {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .info-text strong {
+    color: var(--primary-green);
   }
 
   /* Result Card */

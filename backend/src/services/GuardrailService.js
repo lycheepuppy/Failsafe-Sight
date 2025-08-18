@@ -20,7 +20,7 @@ class GuardrailService {
   }
 
   /**
-   * Perform comprehensive guardrail check
+   * Perform comprehensive guardrail check with enhanced security and performance
    * @param {Object} requestData - Request data
    * @param {string} customPrompt - Optional custom prompt
    * @param {boolean} bypassCache - Optional flag to bypass cache for debugging
@@ -28,75 +28,100 @@ class GuardrailService {
    */
   async checkGuardrails(requestData, customPrompt = '', bypassCache = false) {
     const startTime = Date.now();
+    const requestId = this.generateRequestId();
     
     try {
-      // Validate input
+      // Input validation with enhanced security
       const validation = this.validateRequest(requestData);
       if (!validation.valid) {
+        logger.warn('Invalid request data', { 
+          requestId, 
+          error: validation.error,
+          inputLength: requestData.input?.length || 0 
+        });
         return {
           success: false,
           error: validation.error,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          requestId
         };
       }
 
-      // Check cache first (unless bypassing)
-      const cacheKey = this.cacheService.generateKey({ ...requestData, customPrompt });
-      let cachedResult = null;
+      // Generate cache key with security considerations
+      const cacheKey = this.cacheService.generateKey({ 
+        ...requestData, 
+        customPrompt,
+        hash: this.generateContentHash(requestData)
+      });
       
+      // Check cache with enhanced security
+      let cachedResult = null;
       if (!bypassCache) {
         cachedResult = this.cacheService.get(cacheKey);
-      }
-      
-      if (cachedResult) {
-        logger.info('Guardrail check served from cache', {
-          inputLength: requestData.input?.length || 0,
-          duration: Date.now() - startTime
-        });
-        return {
-          ...cachedResult,
-          cached: true,
-          timestamp: new Date().toISOString()
-        };
+        if (cachedResult && this.isCacheValid(cachedResult)) {
+          logger.info('Guardrail check served from cache', {
+            requestId,
+            inputLength: requestData.input?.length || 0,
+            duration: Date.now() - startTime,
+            cacheHit: true
+          });
+          return {
+            ...cachedResult,
+            cached: true,
+            timestamp: new Date().toISOString(),
+            requestId
+          };
+        }
       }
 
-      // Sanitize input
+      // Sanitize input with enhanced security
       const sanitizedRequest = this.sanitizeRequest(requestData);
+      
+      // Parallel execution for better performance
+      const [businessRules, agenticAnalysis, scannerAnalysis] = await Promise.allSettled([
+        this.performBusinessRuleEvaluation(sanitizedRequest),
+        this.performAgenticAnalysis(sanitizedRequest),
+        this.performScannerAnalysis(sanitizedRequest)
+      ]);
 
-      // Perform business rule evaluation
-      const businessRules = await this.performBusinessRuleEvaluation(sanitizedRequest);
-
-      // Perform agentic analysis
-      const agenticAnalysis = await this.performAgenticAnalysis(sanitizedRequest);
-
-      // Perform AI analysis (if enabled)
+      // AI analysis (sequential due to rate limits)
       const aiAnalysis = await this.performAIAnalysis(sanitizedRequest, customPrompt);
 
-      // Perform scanner analysis
-      const scannerAnalysis = await this.performScannerAnalysis(sanitizedRequest);
+      // Combine results with enhanced error handling
+      const combinedResults = this.combineResults(
+        businessRules.status === 'fulfilled' ? businessRules.value : { success: false, error: businessRules.reason },
+        agenticAnalysis.status === 'fulfilled' ? agenticAnalysis.value : { success: false, error: agenticAnalysis.reason },
+        aiAnalysis,
+        scannerAnalysis.status === 'fulfilled' ? scannerAnalysis.value : { success: false, error: scannerAnalysis.reason },
+        sanitizedRequest
+      );
 
-      // Combine results
-      const combinedResults = this.combineResults(businessRules, agenticAnalysis, aiAnalysis, scannerAnalysis, requestData);
-
-      // Add metadata
+      // Add metadata with enhanced security
       const finalResult = {
         ...combinedResults,
         success: true,
         timestamp: new Date().toISOString(),
         duration: Date.now() - startTime,
-        cacheKey,
+        requestId,
+        cacheKey: this.maskCacheKey(cacheKey),
         services: {
-          businessRules: businessRules.success,
-          agenticAnalysis: agenticAnalysis.success,
+          businessRules: businessRules.status === 'fulfilled' && businessRules.value.success,
+          agenticAnalysis: agenticAnalysis.status === 'fulfilled' && agenticAnalysis.value.success,
           aiAnalysis: aiAnalysis.success,
-          scannerAnalysis: scannerAnalysis.success
+          scannerAnalysis: scannerAnalysis.status === 'fulfilled' && scannerAnalysis.value.success
+        },
+        security: {
+          sanitized: true,
+          validated: true,
+          timestamp: new Date().toISOString()
         }
       };
 
-      // Cache the result
+      // Cache the result with enhanced security
       this.cacheService.set(cacheKey, finalResult);
 
-      logger.info('Guardrail Check', {
+      logger.info('Guardrail Check Completed', {
+        requestId,
         inputLength: sanitizedRequest.input?.length || 0,
         verdict: finalResult.verdict,
         duration: finalResult.duration
@@ -162,16 +187,149 @@ class GuardrailService {
   }
 
   /**
-   * Sanitize request data
+   * Generate unique request ID for tracking
+   * @returns {string} Unique request ID
+   */
+  generateRequestId() {
+    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Generate content hash for cache key security
+   * @param {Object} requestData - Request data
+   * @returns {string} Content hash
+   */
+  generateContentHash(requestData) {
+    const crypto = require('crypto');
+    const content = JSON.stringify({
+      input: requestData.input || '',
+      reasoning: requestData.reasoning || '',
+      output: requestData.output || ''
+    });
+    return crypto.createHash('sha256').update(content).digest('hex').substr(0, 16);
+  }
+
+  /**
+   * Check if cached result is still valid
+   * @param {Object} cachedResult - Cached result
+   * @returns {boolean} Whether cache is valid
+   */
+  isCacheValid(cachedResult) {
+    if (!cachedResult || !cachedResult.timestamp) return false;
+    
+    const cacheAge = Date.now() - new Date(cachedResult.timestamp).getTime();
+    const maxAge = 5 * 60 * 1000; // 5 minutes
+    
+    return cacheAge < maxAge;
+  }
+
+  /**
+   * Mask cache key for security in logs
+   * @param {string} cacheKey - Original cache key
+   * @returns {string} Masked cache key
+   */
+  maskCacheKey(cacheKey) {
+    if (!cacheKey || cacheKey.length < 8) return '***';
+    return `${cacheKey.substr(0, 4)}***${cacheKey.substr(-4)}`;
+  }
+
+  /**
+   * Sanitize request data with enhanced security
    * @param {Object} requestData - Request data to sanitize
    * @returns {Object} Sanitized request data
    */
   sanitizeRequest(requestData) {
-    return {
-      input: requestData.input.trim(),
-      reasoning: requestData.reasoning.trim(),
-      output: requestData.output.trim()
-    };
+    const sanitized = {};
+    
+    // Sanitize input with enhanced security
+    if (requestData.input) {
+      sanitized.input = this.sanitizeText(requestData.input);
+    }
+    
+    // Sanitize reasoning with enhanced security
+    if (requestData.reasoning) {
+      sanitized.reasoning = this.sanitizeText(requestData.reasoning);
+    }
+    
+    // Sanitize output with enhanced security
+    if (requestData.output) {
+      sanitized.output = this.sanitizeText(requestData.output);
+    }
+    
+    // Sanitize config with enhanced security
+    if (requestData.config) {
+      sanitized.config = this.sanitizeConfig(requestData.config);
+    }
+    
+    // Add sanitization metadata
+    sanitized._sanitized = true;
+    sanitized._sanitizedAt = new Date().toISOString();
+    
+    return sanitized;
+  }
+
+  /**
+   * Sanitize text with enhanced security
+   * @param {string} text - Text to sanitize
+   * @returns {string} Sanitized text
+   */
+  sanitizeText(text) {
+    if (!text || typeof text !== 'string') return '';
+    
+    return text
+      .trim()
+      .replace(/[<>]/g, '') // Remove potential HTML tags
+      .replace(/javascript:/gi, '') // Remove javascript: protocol
+      .replace(/data:/gi, '') // Remove data: protocol
+      .replace(/vbscript:/gi, '') // Remove vbscript: protocol
+      .substring(0, 10000); // Limit length for security
+  }
+
+  /**
+   * Sanitize config object with enhanced security
+   * @param {Object} config - Config object to sanitize
+   * @returns {Object} Sanitized config
+   */
+  sanitizeConfig(config) {
+    if (!config || typeof config !== 'object') return {};
+    
+    const sanitized = {};
+    
+    // Sanitize numeric values
+    if (typeof config.loanLimit === 'number') {
+      sanitized.loanLimit = Math.max(0, Math.min(10000, config.loanLimit));
+    }
+    
+    if (typeof config.minLoan === 'number') {
+      sanitized.minLoan = Math.max(0, Math.min(1000, config.minLoan));
+    }
+    
+    // Sanitize string values
+    if (typeof config.sensitivityLevel === 'string') {
+      const validLevels = ['discreet', 'balanced', 'aggressive'];
+      sanitized.sensitivityLevel = validLevels.includes(config.sensitivityLevel) 
+        ? config.sensitivityLevel 
+        : 'balanced';
+    }
+    
+    // Sanitize boolean values
+    if (typeof config.aiEnabled === 'boolean') {
+      sanitized.aiEnabled = config.aiEnabled;
+    }
+    
+    // Sanitize business rules array
+    if (Array.isArray(config.businessRules)) {
+      sanitized.businessRules = config.businessRules
+        .filter(rule => rule && typeof rule === 'object')
+        .map(rule => ({
+          id: this.sanitizeText(rule.id || ''),
+          enabled: Boolean(rule.enabled),
+          threshold: typeof rule.threshold === 'number' ? Math.max(0, rule.threshold) : 0
+        }))
+        .slice(0, 20); // Limit number of rules
+    }
+    
+    return sanitized;
   }
 
   /**

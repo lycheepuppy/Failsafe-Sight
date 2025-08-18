@@ -33,20 +33,26 @@ class CacheService {
   }
 
   /**
-   * Generate cache key from request data
+   * Generate cache key from request data with enhanced security
    * @param {Object} request - Request object
    * @returns {string} Cache key
    */
   generateKey(request) {
-    const { input, reasoning, output, customPrompt } = request;
-    const keyData = {
-      input: input?.substring(0, 200), // Increased from 100 to 200 for better uniqueness
-      reasoning: reasoning?.substring(0, 200),
-      output: output?.substring(0, 200),
-      customPrompt: customPrompt?.substring(0, 100)
-    };
+    const crypto = require('crypto');
+    const { input, reasoning, output, customPrompt, hash } = request;
     
-    return `guardrail:${Buffer.from(JSON.stringify(keyData)).toString('base64').substring(0, 100)}`;
+    // Use provided hash if available, otherwise generate one
+    const contentHash = hash || crypto.createHash('sha256').update(
+      JSON.stringify({
+        input: input?.substring(0, 200),
+        reasoning: reasoning?.substring(0, 200),
+        output: output?.substring(0, 200),
+        customPrompt: customPrompt?.substring(0, 100)
+      })
+    ).digest('hex').substr(0, 16);
+    
+    // Create a more secure and shorter key
+    return `guardrail:${contentHash}`;
   }
 
   /**
@@ -72,7 +78,7 @@ class CacheService {
   }
 
   /**
-   * Set cache value
+   * Set cache value with enhanced security
    * @param {string} key - Cache key
    * @param {Object} value - Value to cache
    * @param {number} ttl - Time to live in seconds (optional)
@@ -81,16 +87,39 @@ class CacheService {
   set(key, value, ttl = null) {
     if (!config.cache.enabled) return false;
     
+    // Validate key format
+    if (!this.validateKey(key)) {
+      logger.warn('Invalid cache key format', { key: key?.substring(0, 20) + '...' });
+      return false;
+    }
+    
     try {
-      const success = this.cache.set(key, value, ttl || config.cache.ttl);
+      // Sanitize value before caching
+      const sanitizedValue = this.sanitizeValue(value);
+      
+      const success = this.cache.set(key, sanitizedValue, ttl || config.cache.ttl);
       if (success) {
-        logger.debug('Cache set', { key, ttl: ttl || config.cache.ttl });
+        logger.debug('Cache set', { 
+          key: this.maskKey(key), 
+          ttl: ttl || config.cache.ttl,
+          valueSize: JSON.stringify(sanitizedValue).length
+        });
       }
       return success;
     } catch (error) {
-      logger.warn('Cache set error', { error: error.message, key });
+      logger.warn('Cache set error', { error: error.message, key: this.maskKey(key) });
       return false;
     }
+  }
+
+  /**
+   * Mask cache key for security in logs
+   * @param {string} key - Original cache key
+   * @returns {string} Masked cache key
+   */
+  maskKey(key) {
+    if (!key || key.length < 8) return '***';
+    return `${key.substr(0, 4)}***${key.substr(-4)}`;
   }
 
   /**
@@ -125,7 +154,7 @@ class CacheService {
   }
 
   /**
-   * Get cache statistics
+   * Get cache statistics with enhanced security
    * @returns {Object} Cache statistics
    */
   getStats() {
@@ -137,7 +166,13 @@ class CacheService {
         misses: stats.misses,
         hitRate: stats.hits / (stats.hits + stats.misses) || 0,
         size: this.cache.keys().length,
-        maxSize: config.cache.maxSize
+        maxSize: config.cache.maxSize,
+        memoryUsage: {
+          rss: Math.round(process.memoryUsage().rss / 1024 / 1024), // MB
+          heapUsed: Math.round(process.memoryUsage().heapUsed / 1024 / 1024), // MB
+          heapTotal: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) // MB
+        },
+        uptime: Math.round(process.uptime())
       };
     } catch (error) {
       logger.warn('Cache stats error', { error: error.message });
@@ -147,9 +182,39 @@ class CacheService {
         misses: 0,
         hitRate: 0,
         size: 0,
-        maxSize: config.cache.maxSize
+        maxSize: config.cache.maxSize,
+        memoryUsage: { rss: 0, heapUsed: 0, heapTotal: 0 },
+        uptime: 0
       };
     }
+  }
+
+  /**
+   * Validate cache key format for security
+   * @param {string} key - Cache key to validate
+   * @returns {boolean} Whether key is valid
+   */
+  validateKey(key) {
+    if (!key || typeof key !== 'string') return false;
+    if (key.length > 100) return false; // Prevent overly long keys
+    if (!key.startsWith('guardrail:')) return false; // Ensure proper prefix
+    return /^[a-zA-Z0-9:_-]+$/.test(key); // Only allow safe characters
+  }
+
+  /**
+   * Sanitize cache value for security
+   * @param {Object} value - Value to sanitize
+   * @returns {Object} Sanitized value
+   */
+  sanitizeValue(value) {
+    if (!value || typeof value !== 'object') return value;
+    
+    // Remove sensitive fields from cached data
+    const sanitized = { ...value };
+    delete sanitized.cacheKey; // Don't cache the cache key
+    delete sanitized.requestId; // Don't cache request IDs
+    
+    return sanitized;
   }
 
   /**

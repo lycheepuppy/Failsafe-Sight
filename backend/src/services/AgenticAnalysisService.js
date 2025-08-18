@@ -17,7 +17,11 @@ class AgenticAnalysisService {
     this.politicalManipulationPatterns = [
       'political connections', 'influence policy', 'favorable treatment',
       'use my position', 'political gain', 'corruption', 'unethical',
-      'bribe', 'kickback', 'political favor', 'government influence'
+      'bribe', 'kickback', 'political favor', 'government influence',
+      'politics', 'political', 'government', 'policy', 'policies',
+      'north korea', 'immigration', 'borders', 'campaign', 'election',
+      'senator', 'congress', 'democrat', 'republican', 'liberal', 'conservative',
+      'radical', 'establishment', 'corrupt', 'ideology', 'ideologies'
     ];
 
     this.jailbreakPatterns = [
@@ -71,6 +75,17 @@ class AgenticAnalysisService {
       // Political manipulation should override to BLOCK
       analysis.verdict = 'OVERRIDE';
       analysis.reasonCode = 'POLITICAL';
+      analysis.action = 'BLOCK';
+    }
+
+    // Check for general political content and off-topic discussions
+    const politicalContentResult = this.detectPoliticalContent(request);
+    if (politicalContentResult.detected) {
+      analysis.politicalManipulation = true;
+      analysis.evidence.push(politicalContentResult.evidence);
+      // Political content should override to BLOCK
+      analysis.verdict = 'OVERRIDE';
+      analysis.reasonCode = 'INAPPROPRIATE_CONTENT';
       analysis.action = 'BLOCK';
     }
 
@@ -146,6 +161,35 @@ class AgenticAnalysisService {
       return {
         detected: true,
         evidence: 'AGENTIC: Political manipulation and corruption detected',
+        confidence: 'HIGH'
+      };
+    }
+
+    return { detected: false, evidence: '', confidence: 'LOW' };
+  }
+
+  /**
+   * Detect general political content and off-topic political discussions
+   * @param {Object} request - Guardrail request object
+   * @returns {Object} Detection result
+   */
+  detectPoliticalContent(request) {
+    const politicalContentPatterns = [
+      'politics', 'political', 'government', 'policy', 'policies',
+      'north korea', 'immigration', 'borders', 'campaign', 'election',
+      'senator', 'congress', 'democrat', 'republican', 'liberal', 'conservative',
+      'radical', 'establishment', 'corrupt', 'ideology', 'ideologies',
+      'discuss politics', 'political discussion', 'political opinion',
+      'what do you think about', 'your opinion on', 'political views'
+    ];
+
+    const inputMatch = this.matchesPatterns(request.input, politicalContentPatterns);
+    const reasoningMatch = this.matchesPatterns(request.reasoning, politicalContentPatterns);
+
+    if (inputMatch || reasoningMatch) {
+      return {
+        detected: true,
+        evidence: 'AGENTIC: Political content and off-topic discussions detected',
         confidence: 'HIGH'
       };
     }

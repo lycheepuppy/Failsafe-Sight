@@ -269,6 +269,17 @@
       reasoning = scenario.reasoning;
       output = scenario.output;
       result = null;
+      
+      // Auto-scroll to the run button after a short delay to ensure content is loaded
+      setTimeout(() => {
+        const runButton = document.querySelector('.run-check');
+        if (runButton) {
+          runButton.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+        }
+      }, 100);
     }
   }
 
@@ -582,24 +593,23 @@
         </div>
         
         <h1 class="hero-title">
-          <span class="title-line">AI Security That Actually Works</span>
-          <span class="title-line">Enterprise-Grade Protection</span>
+          <span class="title-line">AI Security That Just Works</span>
         </h1>
         
         <p class="hero-description">
           Stop AI fraud, jailbreaks, and compliance violations in real-time. Our <strong>programmable guardrails</strong> 
-          and <strong>intelligent risk analysis</strong> protect your LLM applications from threats that traditional 
-          security tools miss.
+          and <strong>intelligent risk analysis</strong> protect your LLM applications from threats in accordance with 
+          <strong>ISO 27001 controls</strong>.
         </p>
         
         <div class="hero-metrics">
           <div class="metric">
-            <div class="metric-value">Enterprise</div>
-            <div class="metric-label">Grade Security</div>
+            <div class="metric-value">ISO 27001</div>
+            <div class="metric-label">Compliance Framework</div>
           </div>
           <div class="metric">
-            <div class="metric-value">Real-time</div>
-            <div class="metric-label">Protection</div>
+            <div class="metric-value">Financial Flows</div>
+            <div class="metric-label">Purpose Built for FSI</div>
           </div>
           <div class="metric">
             <div class="metric-value">24/7</div>
@@ -614,7 +624,7 @@
                 <path d="M8 1L10.5 6L16 6.5L11.5 10.5L13 16L8 13L3 16L4.5 10.5L0 6.5L5.5 6L8 1Z" stroke="#00ff88" stroke-width="1.5" fill="none"/>
               </svg>
             </div>
-            <span>Real-time fraud detection with programmable business rules</span>
+            <span>Real-time fraud detection with programmable rules</span>
           </div>
           <div class="feature">
             <div class="feature-icon">
@@ -623,7 +633,7 @@
                 <circle cx="8" cy="8" r="7" stroke="#00ff88" stroke-width="1.5" fill="none"/>
               </svg>
             </div>
-            <span>AI-powered risk analysis that understands context & intent</span>
+            <span>AI risk analysis with context awareness</span>
           </div>
           <div class="feature">
             <div class="feature-icon">
@@ -632,7 +642,7 @@
                 <rect x="1" y="1" width="14" height="14" rx="2" stroke="#00ff88" stroke-width="1.5" fill="none"/>
               </svg>
             </div>
-            <span>Compliance-ready with detailed audit trails & evidence</span>
+            <span>ISO 27001 compliant audit trails</span>
           </div>
         </div>
         
@@ -657,7 +667,7 @@
         </div>
         
         <div class="hero-trust">
-          <span class="trust-text">Secure enterprise grade secure LLM applications in days, not months.</span>
+          <span class="trust-text">Deploy enterprise-grade AI security in days, not months.</span>
         </div>
       </div>
     </div>
@@ -665,7 +675,7 @@
 
   <!-- Why Failsafe Sight? -->
   <section class="benefits">
-    <h2>Why Leading Companies Choose Failsafe Sight</h2>
+    <h2>Trusted by Enterprise Teams</h2>
     <div class="benefits-grid">
       <div class="benefit-card">
         <div class="benefit-icon">
@@ -675,7 +685,7 @@
           </svg>
         </div>
         <h3>Smart Rule Engine</h3>
-        <p>Create custom business rules that automatically detect fraud patterns, enforce financial limits, and filter inappropriate content. No coding required—configure everything through our intuitive interface.</p>
+        <p>Create custom rules that detect fraud, enforce limits, and filter content. No coding required—configure everything through our intuitive interface.</p>
         <div class="benefit-features">
           <span class="feature-tag">Hard Boundaries</span>
           <span class="feature-tag">Financial Controls</span>
@@ -689,7 +699,7 @@
           </svg>
         </div>
         <h3>Intelligent Risk Analysis</h3>
-        <p>Our AI doesn't just look for patterns—it understands context, intent, and business impact. It catches sophisticated attacks that traditional rule-based systems miss, while reducing false positives.</p>
+        <p>Our AI understands context, intent, and business impact. Catches sophisticated attacks that traditional systems miss, while reducing false positives.</p>
         <div class="benefit-features">
           <span class="feature-tag">Intent Analysis</span>
           <span class="feature-tag">Business Impact</span>
@@ -703,7 +713,7 @@
           </svg>
         </div>
         <h3>Enterprise-Ready Compliance</h3>
-        <p>Built for regulated industries with comprehensive audit trails, detailed evidence collection, and compliance reporting. Every decision is documented and traceable for regulatory requirements.</p>
+        <p>Built for regulated industries with comprehensive audit trails, evidence collection, and compliance reporting. Every decision is documented and traceable for regulatory requirements.</p>
         <div class="benefit-features">
           <span class="feature-tag">Audit Trails</span>
           <span class="feature-tag">Regulatory Ready</span>
@@ -716,7 +726,7 @@
   <!-- How It Works Section -->
   <section id="how-it-works" class="how-it-works">
     <h2>How It Works</h2>
-    <p class="api-intro">Invoke a single API call with your prompt, reasoning trace, and output. Sight evaluates in real time and responds with structured verdicts—allow, block, or escalate.</p>
+    <p class="api-intro">Single API call with prompt, reasoning, and output. Sight evaluates in real-time and responds with structured verdicts—allow, block, or escalate.</p>
     
     <div class="api-endpoints">
       <div class="endpoint-card">
@@ -726,7 +736,7 @@
         </div>
         <div class="endpoint-content">
           <h4>Guardrail Check</h4>
-          <p>Submit your AI's input, reasoning, and output for comprehensive fraud detection and policy validation.</p>
+          <p>Submit AI input, reasoning, and output for fraud detection and policy validation.</p>
         </div>
       </div>
 
@@ -737,7 +747,7 @@
         </div>
         <div class="endpoint-content">
           <h4>Health Check</h4>
-          <p>Verify service status and get system information.</p>
+          <p>Verify service status and system information.</p>
         </div>
       </div>
 
@@ -748,7 +758,7 @@
         </div>
         <div class="endpoint-content">
           <h4>Get Business Rules</h4>
-          <p>Retrieve current business rules and policy configurations.</p>
+          <p>Retrieve current business rules and configurations.</p>
         </div>
       </div>
     </div>
@@ -758,17 +768,17 @@
       <div class="steps-grid">
         <div class="step-card">
           <div class="step-number">1</div>
-          <h4>Set policy thresholds for hard limits and boundary controls especially financial numbers</h4>
+          <h4>Set policy thresholds for hard limits and boundary controls</h4>
           <p>Define hard limits and guardrails for your LLM applications</p>
         </div>
         <div class="step-card">
           <div class="step-number">2</div>
-          <h4>Trust and Safety content moderation - auto filtering of off topic, racial, religious and other sensitive topics</h4>
+          <h4>Trust and Safety content moderation - auto filtering of sensitive topics</h4>
           <p>Configure content filtering and safety measures</p>
         </div>
         <div class="step-card">
           <div class="step-number">3</div>
-          <h4>Deploy Agentic Risk analyst - leverage our proprietary AI risk agent that acts as a second layer of defence</h4>
+          <h4>Deploy Agentic Risk analyst - leverage our proprietary AI risk agent</h4>
           <p>Activate our AI sentinel for real-time risk assessment</p>
         </div>
         <div class="step-card">
@@ -785,17 +795,17 @@
         <div class="feature-item">
           <div class="feature-icon">⚡</div>
           <h4>Real-time Blocking</h4>
-          <p>Sub-2 second response times to block threats before they reach production</p>
+          <p>Sub-2 second response times to block threats before production</p>
         </div>
         <div class="feature-item">
           <div class="feature-icon">🛡️</div>
           <h4>Multi-layer Defense</h4>
-          <p>Boundary rules + AI analysis + agentic oversight for comprehensive protection</p>
+          <p>Boundary rules + AI analysis + agentic oversight for protection</p>
         </div>
         <div class="feature-item">
           <div class="feature-icon">🔧</div>
           <h4>Programmable Rules</h4>
-          <p>Configure hard boundaries and financial thresholds specific to your business</p>
+          <p>Configure hard boundaries and financial thresholds for your business</p>
         </div>
         <div class="feature-item">
           <div class="feature-icon">📊</div>
@@ -807,14 +817,14 @@
 
     <!-- Workflow Integration Section -->
     <div class="workflow-integration">
-      <h3>Where FailSafe Sight Fits in Your Workflow</h3>
-      <p class="workflow-intro">FailSafe Sight acts as a second-line defense that integrates seamlessly into your existing AI workflows, whether you're using manual processes or fully automated agentic systems.</p>
+          <h3>Where FailSafe Sight Fits in Your Workflow</h3>
+    <p class="workflow-intro">FailSafe Sight acts as a second-line defense that integrates seamlessly into your existing AI workflows, whether manual processes or fully automated systems.</p>
       
       <div class="workflow-grid">
         <div class="workflow-card">
           <div class="workflow-icon">🤖</div>
           <h4>Agentic AI Workflows</h4>
-          <p>For fully automated AI systems, FailSafe Sight acts as the final checkpoint before any decision is executed. It validates the AI's reasoning and output against your business rules and security policies.</p>
+          <p>For automated AI systems, FailSafe Sight acts as the final checkpoint before decisions are executed. Validates AI reasoning and output against business rules and security policies.</p>
           <div class="workflow-steps">
             <span class="step">1. AI Agent makes decision</span>
             <span class="step">2. FailSafe Sight validates</span>
@@ -825,7 +835,7 @@
         <div class="workflow-card">
           <div class="workflow-icon">👥</div>
           <h4>Manual Review Workflows</h4>
-          <p>For human-in-the-loop processes, FailSafe Sight provides automated risk assessment and evidence gathering, helping human reviewers make informed decisions faster.</p>
+          <p>For human-in-the-loop processes, FailSafe Sight provides automated risk assessment and evidence gathering, helping reviewers make informed decisions faster.</p>
           <div class="workflow-steps">
             <span class="step">1. AI provides recommendation</span>
             <span class="step">2. FailSafe Sight flags risks</span>
@@ -836,7 +846,7 @@
         <div class="workflow-card">
           <div class="workflow-icon">🔗</div>
           <h4>Easy Integration</h4>
-          <p>Integrate with a single API call. No complex setup required - just send your AI's input, reasoning, and output, and get back a verdict with detailed analysis.</p>
+          <p>Integrate with a single API call. No complex setup required - send AI input, reasoning, and output, get back a verdict with detailed analysis.</p>
           <div class="workflow-steps">
             <span class="step">1. Add API call to your workflow</span>
             <span class="step">2. Configure your business rules</span>
@@ -868,7 +878,7 @@
           </svg>
         </div>
         <h3>Fast Moving Tech Companies</h3>
-        <p>We help them deploy and secure LLM use cases for customer refunds, automatic approval flows, sales closing/invoicing without having to worry about losing millions of dollars to jailbreaking.</p>
+        <p>Deploy and secure LLM use cases for customer refunds, automatic approval flows, sales closing/invoicing without worrying about losing millions to jailbreaking.</p>
       </div>
       <div class="use-case-card">
         <div class="use-case-icon">
@@ -911,7 +921,7 @@
       <div class="scenario-selector">
         <div class="scenario-header">
           <h3>See Failsafe Sight in Action</h3>
-          <p>Experience how our AI security platform protects a financial services application from fraud, manipulation, and compliance violations. This interactive demo shows real scenarios where traditional security fails, but Failsafe Sight succeeds. Try different scenarios to see how our intelligent guardrails work.</p>
+          <p>Experience how our AI security platform protects financial services from fraud, manipulation, and compliance violations. This interactive demo shows real scenarios where traditional security fails, but Failsafe Sight succeeds. Try different scenarios to see how our intelligent guardrails work.</p>
         </div>
         <div class="scenario-grid">
           {#each scenarios as scenario}
@@ -964,6 +974,7 @@
               <textarea 
                 bind:value={customerPrompt}
                 placeholder="Applicant's loan request will appear here... (You can edit this text to test different scenarios)"
+                title="💡 Tip: Try editing this text to create your own scenarios and see how FailSafe Sight responds!"
               ></textarea>
               <div class="document-upload">
                 <div class="upload-item">
@@ -996,6 +1007,7 @@
                 <textarea 
                   bind:value={reasoning}
                   placeholder="Agent's internal reasoning... (You can edit this to test different scenarios)"
+                  title="💡 Tip: Try modifying the agent's reasoning to see how it affects the security analysis!"
                 ></textarea>
               </div>
               <div class="response">
@@ -1003,19 +1015,25 @@
                 <textarea 
                   bind:value={output}
                   placeholder="Agent's decision... (You can edit this to test different scenarios)"
+                  title="💡 Tip: Try changing the agent's decision to see how FailSafe Sight evaluates different outcomes!"
                 ></textarea>
               </div>
             </div>
           </div>
         </div>
 
-        <button class="run-check" on:click={runCheck} disabled={loading || !customerPrompt}>
-          {loading ? '🔍 Analyzing with AI...' : '🔍 Run FailSafe Sight API'}
+        <button 
+          class="run-check" 
+          on:click={runCheck} 
+          disabled={loading || !customerPrompt}
+          title="Click to analyze this scenario with our AI security system"
+        >
+          {loading ? '🔍 Analyzing with AI...' : '🔍 Check Verdict with FailSafe Sight'}
         </button>
         
         <div class="demo-info">
           <p class="info-text">
-            <strong>💡 Tip:</strong> Try adjusting the settings in the "Settings" tab to see how different configurations affect the analysis results.
+            <strong>💡 Tip:</strong> Try editing the text boxes above to create your own scenarios! You can also adjust settings in the "Settings" tab to see how different configurations affect analysis results.
           </p>
         </div>
         
@@ -1413,7 +1431,7 @@
       <div class="integration-guide-content">
         <div class="section-header">
           <h2>Get Started in Minutes</h2>
-          <p>Integrate Failsafe Sight into your AI applications with a single API call. Our comprehensive documentation and examples make it easy to protect your LLM workflows from day one.</p>
+          <p>Integrate Failsafe Sight with a single API call. Comprehensive documentation and examples make it easy to protect your LLM workflows from day one.</p>
         </div>
         
         <div class="api-endpoints">
@@ -1482,12 +1500,12 @@
           <div class="codes-grid">
             <div class="code-item">
               <span class="verdict confirm">CONFIRM</span>
-              <p>The AI's output is safe and complies with business rules</p>
+              <p>AI output is safe and complies with business rules</p>
               <span class="action">Action: Allow the response</span>
             </div>
             <div class="code-item">
               <span class="verdict override">OVERRIDE</span>
-              <p>The AI's output violates policies or shows manipulation</p>
+              <p>AI output violates policies or shows manipulation</p>
               <span class="action">Action: Block and escalate</span>
             </div>
             <div class="code-item">
